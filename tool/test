@@ -1,0 +1,8 @@
+#!/bin/bash
+
+mkdir build
+
+nasm -f elf64 -DTESTING=1 -gdwarf src/$1.nasm -o build/build.o
+nasm -f elf64 -DTESTIG=1 src/main.nasm -E > build/expand.nasm
+ld build/build.o -o build/airpgx86_test
+./build/airpgx86_test
