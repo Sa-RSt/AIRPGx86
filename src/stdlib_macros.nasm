@@ -284,364 +284,6 @@ section .text
     %endif
 %endmacro
 
-strend:  ; avança o ponteiro em rdi até que aponte para um NUL (\0)
-    prolog rcx
-    mov cl, [rdi]
-    whilenonzero cl
-        inc rdi
-        mov cl, [rdi]
-    endwhile
-    epilog
-
-strrev: ; rdi = string para inverter
-    prolog rdi, r8, r9, rsi
-    mov rsi, rdi
-    call strend  ; agora rdi aponta para o final da string
-    sub rdi, 1
-    while l, rsi, rdi
-        mov byte cl, [rdi]  ; trocar bytes
-        mov byte dl, [rsi]
-        mov byte [rdi], dl
-        mov byte [rsi], cl
-        inc rsi
-        dec rdi
-    endwhile
-    epilog
-
-
-utoa:  ; rax = inteiro a converter, rdi = ponteiro para buffer onde colocar a string decimal
-    prolog rax, rcx, rdi, rdx, rsi
-    ifzero rax
-        mov byte [rdi], '0'
-        mov byte [rdi+1], 0x00
-    else
-        mov rsi, rdi
-        mov rcx, 10
-        whilenonzero rax
-            xor rdx, rdx
-            div rcx  ; rax = rax/10, rdx = rax%10
-            add dl, '0'  ; converter resto para caractere ascii representativo
-            mov [rdi], dl
-            inc rdi
-        endwhile
-        mov byte [rdi], 0x00
-        mov rdi, rsi  ; voltar rdi para o começo da string
-        call strrev
-    endif
-    epilog
-
-itoa:  ; rax = inteiro a converter, rdi = ponteiro para buffer
-    if l, rax, 0
-        neg rax
-        mov byte [rdi], '-'  ; colocar um sinal de menos e depois chamar utoa
-        inc rdi
-        call utoa
-        neg rax
-        dec rdi
-    else
-        call utoa  ; número positivo ou zero, só chamar utoa
-    endif
-    ret
-
-utoa_hex:  ; rax = inteiro a converter, rdi = ponteiro para buffer onde colocar a string hexadecimal
-    prolog rax, rcx, rdi, rdx, rsi
-    ifzero rax
-        mov byte [rdi], '0'
-        mov byte [rdi+1], 0x00
-    else
-        mov rsi, rdi
-        mov rcx, 16
-        whilenonzero rax
-            mov rdx, rax
-            and rdx, 0b1111  ; rdx = rax % 16
-            shr rax, 4  ; rax = rax / 16
-
-            add dl, '0'  ; converter resto para caractere ascii representativo
-            cmp dl, '9'
-            jle .nao_eh_abcdef
-            add dl, 7  ; deslocar para a região do ascii que tem as letras maiúsculas
-            .nao_eh_abcdef:
-            mov [rdi], dl
-            inc rdi
-        endwhile
-        mov byte [rdi], 0x00
-        mov rdi, rsi  ; voltar rdi para o começo da string
-        call strrev  ; inverter rdi
-        .return:
-    endif
-    epilog
-
-println:  ; rsi = string
-    prolog rsi
-    call print
-    sub rsp, 8
-    mov rsi, rsp
-    mov byte [rsi], 0x0A  ; \n
-    mov byte [rsi+1], 0x00
-    call print
-    add rsp, 8
-    epilog
-
-print:  ; rsi = string
-    prolog rdi
-    mov rdi, 1  ; stdout
-    call fprint
-    epilog
-
-fprint:  ; rdi = file descriptor, rsi = string
-    prolog rax
-    syscall_header
-    mov rcx, rdi  ; rcx já é preservado pelo syscall_header
-    mov rdi, rsi
-    call strend
-    sub rdi, rsi  ; calcula tamanho da string
-    mov rdx, rdi
-    mov rdi, rcx  ; restaura rdi
-    mov rax, 1  ; sys_write
-    syscall
-    syscall_footer
-    epilog
-
-strcpy:  ; rdi = destino, rsi = string a copiar (terminada em NUL)
-    prolog rsi, rdi, r8
-    .loop:
-    mov r8b, [rsi]
-    whilenonzero r8b
-        mov [rdi], r8b
-        inc rsi
-        inc rdi
-        mov r8b, [rsi]
-    endwhile
-    mov byte [rdi], 0x00
-    epilog
-
-memcpy:  ; rdi = destino, rsi = bloco a copiar, r8 = tamanho
-    prolog rcx, rdx
-    for rcx, 0, r8
-        mov dl, [rsi+rcx]
-        mov [rdi+rcx], dl
-    endfor
-    epilog
-
-malloc:  ; rsi = tamanho, rax = (retorno) ponteiro para o bloco
-    prolog
-    syscall_header
-    add rsi, 8
-    mov rax, 0x09
-    xor rdi, rdi
-    mov rdx, 3  ; PROT_READ | PROT_WRITE
-    mov r10, 0x22  ; MAP_ANONYMOUS | MAP_PRIVATE
-    mov r8, -1
-    xor r9, r9  ; offset = 0
-    syscall
-    mov [rax], rsi
-    add rax, 8
-    syscall_footer
-    epilog
-
-free:  ; rdi = ponteiro para o bloco
-    prolog rax
-    syscall_header
-    sub rdi, 8
-    mov rax, 0x0b
-    mov rsi, [rdi]  ; obter tamanho na base do ponteiro
-    xor rdx, rdx
-    xor r10, r10
-    xor r9, r9
-    xor r8, r8
-    syscall
-    syscall_footer
-    epilog
-
-realloc:  ; rsi = novo tamanho, rax = ponteiro para o bloco atual e (retorno) ponteiro para o bloco potencialmente novo
-    prolog rcx, rdi, rsi
-    mov rcx, [rax-8]
-    if g, rsi, rcx
-        mov rdi, rax
-        call malloc
-        mov rsi, rdi
-        mov rdi, rax
-        mov r8, rcx
-        call memcpy
-        mov rdi, rsi
-        call free
-    endif
-    epilog
-
-read_line:  ; rax = (retorno) ponteiro para a string lida, rdi = file descriptor
-    prolog r8
-    mov r8, 0x0A  ; \n
-    call read_until_byte
-    epilog
-
-read_until_byte:  ; rax = (retorno) ponteiro para a string lida, rdi = file descriptor, r8b = byte de parada
-    prolog r15, r14, r13, r12
-    syscall_header
-
-    mov r15, 64
-    mov r12, 0
-    mov rsi, 64
-    call malloc
-    mov rsi, rax
-    mov r13, rax
-
-    dowhile ne, r14b, r8b
-        xor rax, rax  ; sys_read
-        mov rdx, 1
-        syscall
-        mov r14b, [rsi]
-        inc rsi
-        inc r12
-        if ge, r12, r15
-            mov rax, r13
-            shl r15, 1
-            mov rsi, r15
-            call realloc
-            mov rsi, r12
-            add rsi, rax
-            mov r13, rax
-        endif
-    enddowhile
-    mov byte [rsi-1], 0x00
-    mov rax, r13
-    syscall_footer
-    epilog
-
-read_until_whitespace:  ; rax = (retorno) ponteiro para a string lida, rdi = file descriptor
-    prolog r15, r14, r13, r12
-    syscall_header
-
-    mov r15, 64
-    mov r12, 0
-    mov rsi, 64
-    call malloc
-    mov rsi, rax
-    mov r13, rax
-
-    dowhile g, r14b, 0x20
-        xor rax, rax  ; sys_read
-        mov rdx, 1
-        syscall
-        mov r14b, [rsi]
-        inc rsi
-        inc r12
-        if ge, r12, r15
-            mov rax, r13
-            shl r15, 1
-            mov rsi, r15
-            call realloc
-            mov rsi, r12
-            add rsi, rax
-            mov r13, rax
-        endif
-    enddowhile
-    mov byte [rsi-1], 0x00
-    mov rax, r13
-    syscall_footer
-    epilog
-
-atou:  ; rax = (retorno) número lido, r13 = (retorno) zero se o número for válido, rsi = string para ler
-    prolog rdx, r9, rdi, rsi, r8, r14
-    xor r14, r14
-    xor r13, r13
-    mov r9, 10
-    mov rax, 1
-
-    mov rdi, rsi
-    call strend
-
-    if ne, rdi, rsi
-        sub rdi, 1
-        reverse_for rdi, rdi, rsi
-            xor rdx, rdx
-            mov dl, [rdi]
-            cmp dl, '0'
-            jl .error
-            cmp dl, '9'
-            jg .error
-            sub dl, '0'
-            mov r8, rax
-            mul rdx
-            jo .error
-            add r14, rax
-            jo .error
-            mov rax, r8
-            mul r9
-            jo .error
-        endfor
-        mov rax, r14
-        jmp .success
-    endif
-    .error:
-    mov r13, 1
-    .success:
-    mov rax, r14
-    epilog
-
-atoi:  ; rax = (retorno) número lido, r13 = (retorno) zero se o número for válido, rsi = string para ler
-    prolog r10
-    xor r13, r13
-    xor r10, r10
-    mov r10b, [rsi]
-    if e, r10b, '-'
-        inc rsi
-        call atou
-        dec rsi
-        neg rax
-    elifnonzero r10b
-        call atou
-    else
-        mov r13, 1
-    endif
-    if g, rax, 0
-        mov r13, 1
-    endif
-    epilog
-
-atou_hex:  ; rax = (retorno) número lido, r13 = (retorno) zero se o número for válido, rsi = string para ler
-    prolog rdx, rdi, rsi, rcx
-    xor rcx, rcx
-    xor r13, r13
-    xor rax, rax
-
-    mov rdi, rsi
-    call strend
-
-    if ne, rdi, rsi
-        sub rdi, 1
-        reverse_for rdi, rdi, rsi
-            xor rdx, rdx
-            mov dl, [rdi]
-            if l, dl, '0'
-                jmp .error
-            elif le, dl, '9'
-                sub dl, '0'
-            elif le, dl, 'Z'
-                if ge, dl, 'A'
-                    sub dl, 55
-                else
-                    jmp .error
-                endif
-            elif le, dl, 'z'
-                if ge, dl, 'a'
-                    sub dl, 87
-                else
-                    jmp .error
-                endif
-            endif
-            shl rdx, cl
-            jo .error
-            add rax, rdx
-            jo .error
-            add cl, 4
-            jo .error
-        endfor
-        jmp .success
-    endif
-    .error:
-    mov r13, 1
-    .success:
-    epilog
 
 %macro fprintf 3-*
     %xdefine printf_file_descriptor %1
@@ -831,5 +473,364 @@ atou_hex:  ; rax = (retorno) número lido, r13 = (retorno) zero se o número for
 %macro scanf 3-*
     fscanf 0, %{1:-1}
 %endmacro
+
+strend:  ; avança o ponteiro em rdi até que aponte para um NUL (\0)
+    prolog rcx
+    mov cl, [rdi]
+    whilenonzero cl
+        inc rdi
+        mov cl, [rdi]
+    endwhile
+    epilog
+
+strrev: ; rdi = string para inverter
+    prolog rdi, r8, r9, rsi
+    mov rsi, rdi
+    call strend  ; agora rdi aponta para o final da string
+    sub rdi, 1
+    while l, rsi, rdi
+        mov byte cl, [rdi]  ; trocar bytes
+        mov byte dl, [rsi]
+        mov byte [rdi], dl
+        mov byte [rsi], cl
+        inc rsi
+        dec rdi
+    endwhile
+    epilog
+
+
+utoa:  ; rax = inteiro a converter, rdi = ponteiro para buffer onde colocar a string decimal
+    prolog rax, rcx, rdi, rdx, rsi
+    ifzero rax
+        mov byte [rdi], '0'
+        mov byte [rdi+1], 0x00
+    else
+        mov rsi, rdi
+        mov rcx, 10
+        whilenonzero rax
+            xor rdx, rdx
+            div rcx  ; rax = rax/10, rdx = rax%10
+            add dl, '0'  ; converter resto para caractere ascii representativo
+            mov [rdi], dl
+            inc rdi
+        endwhile
+        mov byte [rdi], 0x00
+        mov rdi, rsi  ; voltar rdi para o começo da string
+        call strrev
+    endif
+    epilog
+
+itoa:  ; rax = inteiro a converter, rdi = ponteiro para buffer
+    if l, rax, 0
+        neg rax
+        mov byte [rdi], '-'  ; colocar um sinal de menos e depois chamar utoa
+        inc rdi
+        call utoa
+        neg rax
+        dec rdi
+    else
+        call utoa  ; número positivo ou zero, só chamar utoa
+    endif
+    ret
+
+utoa_hex:  ; rax = inteiro a converter, rdi = ponteiro para buffer onde colocar a string hexadecimal
+    prolog rax, rcx, rdi, rdx, rsi
+    ifzero rax
+        mov byte [rdi], '0'
+        mov byte [rdi+1], 0x00
+    else
+        mov rsi, rdi
+        mov rcx, 16
+        whilenonzero rax
+            mov rdx, rax
+            and rdx, 0b1111  ; rdx = rax % 16
+            shr rax, 4  ; rax = rax / 16
+
+            add dl, '0'  ; converter resto para caractere ascii representativo
+            cmp dl, '9'
+            jle .nao_eh_abcdef
+            add dl, 7  ; deslocar para a região do ascii que tem as letras maiúsculas
+            .nao_eh_abcdef:
+            mov [rdi], dl
+            inc rdi
+        endwhile
+        mov byte [rdi], 0x00
+        mov rdi, rsi  ; voltar rdi para o começo da string
+        call strrev  ; inverter rdi
+        .return:
+    endif
+    epilog
+
+println:  ; rsi = string
+    prolog rsi
+    call print
+    sub rsp, 8
+    mov rsi, rsp
+    mov byte [rsi], 0x0A  ; \n
+    mov byte [rsi+1], 0x00
+    call print
+    add rsp, 8
+    epilog
+
+print:  ; rsi = string
+    prolog rdi
+    mov rdi, 1  ; stdout
+    call fprint
+    epilog
+
+fprint:  ; rdi = file descriptor, rsi = string
+    prolog rax
+    syscall_header
+    mov rcx, rdi  ; rcx já é preservado pelo syscall_header
+    mov rdi, rsi
+    call strend
+    sub rdi, rsi  ; calcula tamanho da string
+    mov rdx, rdi
+    mov rdi, rcx  ; restaura rdi
+    mov rax, 1  ; sys_write
+    syscall
+    syscall_footer
+    epilog
+
+strcpy:  ; rdi = destino, rsi = string a copiar (terminada em NUL)
+    prolog rsi, rdi, r8
+    .loop:
+    mov r8b, [rsi]
+    whilenonzero r8b
+        mov [rdi], r8b
+        inc rsi
+        inc rdi
+        mov r8b, [rsi]
+    endwhile
+    mov byte [rdi], 0x00
+    epilog
+
+memcpy:  ; rdi = destino, rsi = bloco a copiar, r8 = tamanho
+    prolog rcx, rdx
+    for rcx, 0, r8
+        mov dl, [rsi+rcx]
+        mov [rdi+rcx], dl
+    endfor
+    epilog
+
+malloc:  ; rsi = tamanho, rax = (retorno) ponteiro para o bloco
+    prolog
+    syscall_header
+    add rsi, 8
+    mov rax, 0x09
+    xor rdi, rdi
+    mov rdx, 3  ; PROT_READ | PROT_WRITE
+    mov r10, 0x22  ; MAP_ANONYMOUS | MAP_PRIVATE
+    mov r8, -1
+    xor r9, r9  ; offset = 0
+    syscall
+    mov [rax], rsi
+    add rax, 8
+    syscall_footer
+    epilog
+
+free:  ; rdi = ponteiro para o bloco
+    prolog rax
+    syscall_header
+    sub rdi, 8
+    mov rax, 0x0b
+    mov rsi, [rdi]  ; obter tamanho na base do ponteiro
+    xor rdx, rdx
+    xor r10, r10
+    xor r9, r9
+    xor r8, r8
+    syscall
+    syscall_footer
+    epilog
+
+realloc:  ; rsi = novo tamanho, rax = ponteiro para o bloco atual e (retorno) ponteiro para o bloco potencialmente novo
+    prolog rcx, rdi, rsi, r8
+    mov rcx, [rax-8]
+    if g, rsi, rcx
+        mov rdi, rax
+        call malloc
+        mov rsi, rdi
+        mov rdi, rax
+        mov r8, rcx
+        call memcpy
+        mov rdi, rsi
+        call free
+    endif
+    epilog
+
+read_line:  ; rax = (retorno) ponteiro para a string lida, rdi = file descriptor
+    prolog r8
+    mov r8, 0x0A  ; \n
+    call read_until_byte
+    epilog
+
+read_until_byte:  ; rax = (retorno) ponteiro para a string lida, rdi = file descriptor, r8b = byte de parada
+    prolog r15, r14, r13, r12
+    syscall_header
+
+    mov r15, 64
+    mov r12, 0
+    mov rsi, 64
+    call malloc
+    mov rsi, rax
+    mov r13, rax
+
+    dowhile ne, r14b, r8b
+        xor rax, rax  ; sys_read
+        mov rdx, 1
+        syscall
+        mov r14b, [rsi]
+        inc rsi
+        inc r12
+        if ge, r12, r15
+            mov rax, r13
+            shl r15, 1
+            mov rsi, r15
+            call realloc
+            mov rsi, r12
+            add rsi, rax
+            mov r13, rax
+        endif
+    enddowhile
+    mov byte [rsi-1], 0x00
+    mov rax, r13
+    syscall_footer
+    epilog
+
+read_until_whitespace:  ; rax = (retorno) ponteiro para a string lida, rdi = file descriptor
+    prolog r15, r14, r13, r12
+    syscall_header
+
+    mov r15, 64
+    mov r12, 0
+    mov rsi, 64
+    call malloc
+    mov rsi, rax
+    mov r13, rax
+
+    dowhile g, r14b, 0x20
+        xor rax, rax  ; sys_read
+        mov rdx, 1
+        syscall
+        mov r14b, [rsi]
+        inc rsi
+        inc r12
+        if ge, r12, r15
+            mov rax, r13
+            shl r15, 1
+            mov rsi, r15
+            call realloc
+            mov rsi, r12
+            add rsi, rax
+            mov r13, rax
+        endif
+    enddowhile
+    mov byte [rsi-1], 0x00
+    mov rax, r13
+    syscall_footer
+    epilog
+
+atou:  ; rax = (retorno) número lido, r13 = (retorno) zero se o número for válido, rsi = string para ler
+    prolog rdx, r9, rdi, rsi, r8, r14
+    xor r14, r14
+    xor r13, r13
+    mov r9, 10
+    mov rax, 1
+
+    mov rdi, rsi
+    call strend
+
+    if ne, rdi, rsi
+        sub rdi, 1
+        reverse_for rdi, rdi, rsi
+            xor rdx, rdx
+            mov dl, [rdi]
+            cmp dl, '0'
+            jl .error
+            cmp dl, '9'
+            jg .error
+            sub dl, '0'
+            mov r8, rax
+            mul rdx
+            jo .error
+            add r14, rax
+            jo .error
+            mov rax, r8
+            mul r9
+            jo .error
+        endfor
+        mov rax, r14
+        jmp .success
+    endif
+    .error:
+    mov r13, 1
+    .success:
+    mov rax, r14
+    epilog
+
+atoi:  ; rax = (retorno) número lido, r13 = (retorno) zero se o número for válido, rsi = string para ler
+    prolog r10
+    xor r13, r13
+    xor r10, r10
+    mov r10b, [rsi]
+    if e, r10b, '-'
+        inc rsi
+        call atou
+        dec rsi
+        neg rax
+    elifnonzero r10b
+        call atou
+    else
+        mov r13, 1
+    endif
+    if g, rax, 0
+        mov r13, 1
+    endif
+    epilog
+
+atou_hex:  ; rax = (retorno) número lido, r13 = (retorno) zero se o número for válido, rsi = string para ler
+    prolog rdx, rdi, rsi, rcx
+    xor rcx, rcx
+    xor r13, r13
+    xor rax, rax
+
+    mov rdi, rsi
+    call strend
+
+    if ne, rdi, rsi
+        sub rdi, 1
+        reverse_for rdi, rdi, rsi
+            xor rdx, rdx
+            mov dl, [rdi]
+            if l, dl, '0'
+                jmp .error
+            elif le, dl, '9'
+                sub dl, '0'
+            elif le, dl, 'Z'
+                if ge, dl, 'A'
+                    sub dl, 55
+                else
+                    jmp .error
+                endif
+            elif le, dl, 'z'
+                if ge, dl, 'a'
+                    sub dl, 87
+                else
+                    jmp .error
+                endif
+            endif
+            shl rdx, cl
+            jo .error
+            add rax, rdx
+            jo .error
+            add cl, 4
+            jo .error
+        endfor
+        jmp .success
+    endif
+    .error:
+    mov r13, 1
+    .success:
+    epilog
 
 %endif
