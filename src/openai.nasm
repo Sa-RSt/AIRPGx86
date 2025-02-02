@@ -24,6 +24,7 @@ section .bss
 
 openai_subprocess_pipe_outgoing: resd 2
 openai_subprocess_pipe_incoming: resd 2
+openai_subprocess_pid: resq 1
 
 section .text
 
@@ -64,6 +65,7 @@ openai_init_subprocess:
         mov rdx, openai_zero_qword
         syscall
     else
+        mov [openai_subprocess_pid], rax
         mov rsi, openai_api_key
         call openai_write_string
         call openai_read_qword
@@ -135,6 +137,21 @@ openai_read_string:  ; rax = (retorno) ponteiro para a string lida
     epilog
 
 
+openai_shutdown_subprocess:
+    prolog rax
+    mov rax, -1
+    call openai_write_qword    
+    syscall_header
+    mov rax, 0x3D  ; sys_wait4
+    mov rdi, [openai_subprocess_pid]
+    xor rsi, rsi
+    xor rdx, rdx
+    xor r10, r10
+    syscall
+    syscall_footer
+    epilog
+
+
 %ifdef TESTING
 global _start
 
@@ -167,8 +184,7 @@ _start:
     mov rdi, rax
     call free
 
-    mov rax, -1
-    call openai_write_qword
+    call openai_shutdown_subprocess
 
     mov rax, 60  ; sys_exit
     xor rdi, rdi
