@@ -1,2 +1,4 @@
 build/
 .openai-api-key
+*.o
+*.out
