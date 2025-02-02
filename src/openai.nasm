@@ -27,7 +27,7 @@ openai_subprocess_pipe_incoming: resd 2
 
 section .text
 
-openai_spawn_subprocess:
+openai_init_subprocess:
     prolog rax
     syscall_header
     mov rax, 0x16  ; sys_pipe
@@ -139,7 +139,7 @@ openai_read_string:  ; rax = (retorno) ponteiro para a string lida
 global _start
 
 _start:
-    call openai_spawn_subprocess
+    call openai_init_subprocess
     scanf r8, 'u', rax
     print_registers r8, rax
     mov r14, rax
