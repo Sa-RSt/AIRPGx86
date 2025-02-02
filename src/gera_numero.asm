@@ -6,7 +6,7 @@ section .bss
 section .text
     global _start
     %define DEBUG 1
-    %include "stdlib_macros.nasm"           ; Inclui o arquivo de macros
+    %include "stdlib_macros.asm"           ; Inclui o arquivo de macros
 
 _start:
     mov rdi, 20         ; Valor de n para a função gera_numero

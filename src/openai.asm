@@ -1,7 +1,7 @@
 %ifdef TESTING
     %define DEBUG 1
 %endif
-%include "stdlib_macros.nasm"
+%include "stdlib_macros.asm"
 
 section .data
 
