@@ -14,7 +14,7 @@ _start:
     call exit
 
 ; Devolve um número entre 1 e n. O valor máximo de n é 256.
-; Recebe o valor de n em rdi, retorna o numero sorteado em rdx
+; Recebe o valor de n em rdi, retorna o numero sorteado em rdx.
 gera_numero:
     multipush rax, rbx, rcx, rsi
 
