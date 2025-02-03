@@ -1,0 +1,1 @@
+Describe in detail what I'm currently seeing, hearing, feeling, etc. Make sure to add some action or some decision for me to make. Also, make sure to update my health and stamina to values that are consistent with the adventure. Now you MUST use the [travel LOCATION] command to tell me where the adventure begins.

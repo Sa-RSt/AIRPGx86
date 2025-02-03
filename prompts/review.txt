@@ -1,0 +1,4 @@
+Your response to a player's request was:
+$1
+
+Review your answer, verifying whether it uses all of the required commands and using the ones you haven't used but should have. Make sure that, if necessary, you have used [update] to update HP, stamina or luck. If the player is now in a different place, you must update their location with the [travel] command. If the player has obtained or lost an item, you must use [give] or [take] respectively. YOU MUST NOT USE THE [roll] COMMAND NOW.

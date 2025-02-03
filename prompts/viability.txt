@@ -1,0 +1,3 @@
+The player requested:
+$1
+Make a list of things that could go wrong with the player's request, with the purpose of deciding dice rolls. If the action is trivial, such as walking in a well lit environment or eating something that isn't poisoned when the player isn't injured in a way that would make such activities harder, just write "This action is trivial and no rolls are needed.". Otherwise, output "The following could go wrong: " and then the list.
