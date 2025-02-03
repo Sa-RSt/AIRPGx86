@@ -19,6 +19,7 @@ openai_str_python3: db "python3", 0
 openai_str_dashc: db "-c", 0
 openai_subprocess_argv: dq openai_str_env_path, openai_str_env_path, openai_str_python3, openai_str_dashc, openai_python_script, 0
 openai_zero_qword: dq 0
+openai_error_failed_to_load_python: db "FATAL: Failed to load python3 executable. This program will not work. Do you have python3 on your system?", 0xA, 0
 
 section .bss
 
@@ -64,6 +65,11 @@ openai_init_subprocess:
         mov rsi, openai_subprocess_argv
         mov rdx, openai_zero_qword
         syscall
+        ;  execve não retorna normalmente. se ele retornou, há algo de errado
+        mov rdi, 2  ; imprimir na stderr é a única opção
+        mov rsi, openai_error_failed_to_load_python
+        call fprint
+        call exit
     else
         mov [openai_subprocess_pid], rax
         mov rsi, openai_api_key
