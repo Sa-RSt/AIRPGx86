@@ -4,14 +4,18 @@ section .bss
     random_byte resb 1
 
 section .text
-    global _start
-    %define DEBUG 1
+    %ifdef TESTING
+        global _start
+        %define DEBUG 1
+    %endif
     %include "stdlib_macros.asm"           ; Inclui o arquivo de macros
 
+%ifdef TESTING
 _start:
     mov rdi, 20         ; Valor de n para a função gera_numero
     call gera_numero
     call exit
+%endif
 
 ; Devolve um número entre 1 e n. O valor máximo de n é 256.
 ; Recebe o valor de n em rdi, retorna o numero sorteado em rdx.
@@ -67,8 +71,3 @@ gera_numero:
         print_literal "Não é possível sortear para valores menores ou iguais a zero", 0x0A
         multipop rax, rbx, rcx, rsi
         call exit
-
-exit:
-    mov rax, 60                             	    ; Carrega o número da syscall para "exit" (número 60) no registrador rax
-    mov rdi, 0                              	    ; Carrega o valor de saída (0) no registrador rdi (0 indica sucesso)
-    syscall                                 	    ; Chama a syscall, o que vai terminar o programa
