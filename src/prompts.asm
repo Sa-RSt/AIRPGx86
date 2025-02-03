@@ -33,23 +33,26 @@ prompt_replace:  ; rdi = template a usar, r9 = vetor terminado em ponteiro nulo 
         mov r12, rdi  ; salvar template no r12
         mov rsi, rdi
         call strend
-        lea r14, [rdi+1]  ; calcular tamanho total necessário para alocação no r14
+        lea r14, [rdi+1]  ; calcular tamanho total necessário para alocação no r14. começar com o template em si
+        ; por conta dos padrões $N de substituição, o tamanho calculado no final vai ser um pouquinho maior
+        ; do que o suficiente para armazenar a string inteira, mas isso pode ser desprezado
         sub r14, rsi
         mov r11, r9
         mov rsi, [r9]
-        whilenonzero rsi
+        ; estamos considerando que não existem padrões de substituição repetidos dentro do template
+        whilenonzero rsi  ; o último elemento do vetor é um ponteiro nulo
             mov rdi, rsi
             call strend
-            add r14, rdi
-            sub r14, rsi
-            inc r14
+            add r14, rdi  ; r14 = r14 + rdi - rsi
+            sub r14, rsi  ; rdi - rsi é o tamanho da string, pois rdi aponta para o \0
+            inc r14  ; considerar o \0 no final da string
             add r9, 8
             mov rsi, [r9]
         endwhile
         mov r9, r11
         mov rsi, r14
         call malloc
-        mov r15, rax  ; salvar rax no r15
+        mov r15, rax  ; salvar rax (bloco resultado, que será retornado pela função) no r15
         mov r10, rax  ; gravar usando ponteiro r10
         mov r14, r12  ; percorrer template usando r14
         mov r8b, [r14]
@@ -58,7 +61,7 @@ prompt_replace:  ; rdi = template a usar, r9 = vetor terminado em ponteiro nulo 
                 sub rsp, 8
                 mov rsi, rsp
 
-                for rcx, 1, 8
+                for rcx, 1, 8  ; consumir os próximos caracteres até encontrar um que não seja um número.
                     mov r8b, [r14+rcx]
                     cmp r8b, '0'
                     jl .break_loop
@@ -68,9 +71,9 @@ prompt_replace:  ; rdi = template a usar, r9 = vetor terminado em ponteiro nulo 
                     inc rsi
                 endfor
                 .break_loop:
-                add r14, rcx
+                add r14, rcx  ; contabilizar que os caracteres foram consumidos
                 dec r14
-                mov byte [rsi], 0
+                mov byte [rsi], 0  ; add \0 para construir a string que o atou precisa
                 mov rsi, rsp
                 call atou
                 ifnonzero r13
@@ -82,11 +85,11 @@ prompt_replace:  ; rdi = template a usar, r9 = vetor terminado em ponteiro nulo 
                 dec rax  ; números no template começam em um, arrays começam em zero
                 mov rsi, [r9+8*rax]
                 mov rdi, r10
-                call strcpy
-                call strend
+                call strcpy  ; copiar string passada como parâmetro para a string resultado
+                call strend  ; colocar "cursor" no final da string resultado
                 mov r10, rdi
                 add rsp, 8
-            else
+            else  ; se o caractere atual não for '$', só copiamos para o 
                 mov [r10], r8b
                 inc r10
             endif
