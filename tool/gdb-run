@@ -1,4 +1,0 @@
-#!/bin/bash
-
-./tool/build
-gdb ./build/airpgx86

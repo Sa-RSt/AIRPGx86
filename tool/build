@@ -1,7 +1,0 @@
-#!/bin/bash
-
-mkdir build
-
-nasm -f elf64 -gdwarf src/main.nasm -o build/build.o
-nasm -f elf64 src/main.nasm -E > build/expand.nasm
-ld build/build.o -o build/airpgx86
