@@ -474,6 +474,31 @@ section .text
     fscanf 0, %{1:-1}
 %endmacro
 
+strcmp: ; r8, r9 = strings a serem analisadas (r11 contém o resultado. 1 se diferente, 0 se igual)
+    prolog r10, rax, rbx
+    mov r10, 0
+    strcmp_loop:
+    mov al, [r8 + r10]
+    mov bl, [r9 + r10]
+    cmp al, $0
+    je strcmp_end
+    inc r10
+    cmp al, bl
+    jne strcmp_dif
+    jmp strcmp_loop
+    strcmp_end:
+        cmp r10, 0
+        je strcmp_dif
+        cmp bl, $0
+        jne strcmp_dif
+        mov r11, 0
+        jmp strcmp_epilog
+    strcmp_dif:
+        mov r11, 1
+        jmp strcmp_epilog
+    strcmp_epilog:
+        epilog
+
 strend:  ; avança o ponteiro em rdi até que aponte para um NUL (\0)
     prolog rcx
     mov cl, [rdi]
