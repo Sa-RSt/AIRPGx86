@@ -1,4 +1,3 @@
-
 %ifdef TESTING
     %define DEBUG 1
     global _start
@@ -20,6 +19,7 @@ section .bss
 
 section .text
 
+    %ifdef TESTING
     _start: ; Essa coisa estranha é só um teste pro strcmp
         scanf rbx, 'ss', r8, r9
         call strcmp
@@ -33,6 +33,7 @@ section .text
 
     yay:
         ret
+    %endif
 
 
 
