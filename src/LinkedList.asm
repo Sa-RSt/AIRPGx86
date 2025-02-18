@@ -20,7 +20,7 @@ section .bss
 
 section .text
 
-    _start:
+    _start: ; Essa coisa estranha é só um teste pro strcmp
         scanf rbx, 'ss', r8, r9
         call strcmp
         call whatever
@@ -172,6 +172,7 @@ section .text
         mov r15, [rbp + 24] ; Guarda o endereço da lista
         mov r14, [rbp + 16] ; Guarda o índice do elemento a ser removido
         mov r13, 0 ; Esse valor irá guardar o nó anterior para correção de ponteiros
+        push r15 ; Guarda o valor do primeiro nó
 
         index_remove_loop: ; Busca o nó a ser removido
         mov r8, r15
@@ -192,15 +193,19 @@ section .text
         je remove_first ; Se for, vai para um caso especial de remoção
         mov r14, r15 + 192
         mov [r13 + 192], r14 ; node->ant->prox = node->prox
-        free r15 ; Free the node
+        mov rdi, r15
+        call free ; Free the node
+        pop r15 ; Busca o primeiro nó para o retorno
         jmp remove_epilogue
 
         remove_first:
+        pop rdi ; Joga fora o primeiro nó, visto que ele será removido
         mov rdi, r15
         mov r15, [r15 + 192] ; r15 agora aponta pro segundo elemento da lista
         call free ; Free the original first node
 
         remove_epilogue:
             epilog
+
 
 
