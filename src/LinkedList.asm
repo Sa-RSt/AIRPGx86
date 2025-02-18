@@ -191,7 +191,7 @@ section .text
         remove_proper: 
         cmp r13, 0 ; Verifica se o elemento a ser retirado é o primeiro
         je remove_first ; Se for, vai para um caso especial de remoção
-        mov r14, r15 + 192
+        mov r14, [r15 + 192]
         mov [r13 + 192], r14 ; node->ant->prox = node->prox
         mov rdi, r15
         call free ; Free the node
@@ -206,6 +206,7 @@ section .text
 
         remove_epilogue:
             epilog
+
 
 
 
