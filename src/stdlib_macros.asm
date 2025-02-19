@@ -638,6 +638,23 @@ memcpy:  ; rdi = destino, rsi = bloco a copiar, r8 = tamanho
     endfor
     epilog
 
+strncpy:  ; rdi = destino, rsi = bloco a copiar, r8 = tamanho máximo
+    prolog rdi, r8, r9
+    mov r9, rdi  ; salvar destino no r9
+    mov rdi, rsi
+    call strend
+    sub rdi, rsi  ; rdi tem o tamanho da string
+    if le, rdi, r8
+        mov rdi, r9
+        call strcpy
+    else
+        mov rdi, r9
+        call memcpy
+        dec r8
+        mov byte [rdi+r8], 0  ; inserir \0 no final
+    endif
+    epilog
+
 malloc:  ; rsi = tamanho, rax = (retorno) ponteiro para o bloco
     prolog
     syscall_header
