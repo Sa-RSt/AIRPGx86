@@ -20,12 +20,12 @@ color_green: db 27, "[32m", 0
 color_brightgreen: db 27, "[92m", 0
 color_yellow: db 27, "[33m", 0
 color_brightyellow: db 27, "[93m", 0
-color_blue': db 27, "[34m", 0
-color_brightblue': db 27, "[94m", 0
-color_magenta': db 27, "[35m", 0
-color_brightmagenta': db 27, "[95m", 0
-color_cyan': db 27, "[36m", 0
-color_brightcyan': db 27, "[96m", 0
-color_gray': db 27, "[37m", 0
-color_white': db 27, "[01m", 0
+color_blue: db 27, "[34m", 0
+color_brightblue: db 27, "[94m", 0
+color_magenta: db 27, "[35m", 0
+color_brightmagenta: db 27, "[95m", 0
+color_cyan: db 27, "[36m", 0
+color_brightcyan: db 27, "[96m", 0
+color_gray: db 27, "[37m", 0
+color_white: db 27, "[01m", 0
 %endif
