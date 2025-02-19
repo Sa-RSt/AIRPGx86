@@ -1,6 +1,3 @@
-%define DEBUG 1
-global _start
-
 %ifdef TESTING
     %define DEBUG 1
     global _start
@@ -21,7 +18,7 @@ section .bss
     info_bytes: resb 128
 
 section .text
-
+    %ifdef TESTING
     _start:
         scanf rbx, 'ss', r8, r9
         multipush r8, r9
@@ -47,7 +44,7 @@ section .text
         call is_node
         add rsp, 16
         call exit
-
+    %endif
 
 
 
