@@ -1,3 +1,6 @@
+%ifndef OPENAI
+%define OPENAI 1
+
 %ifdef TESTING
     %define DEBUG 1
 %endif
@@ -196,3 +199,4 @@ _start:
     xor rdi, rdi
     syscall
 %endif
+%endif  ; ndef OPENAI
