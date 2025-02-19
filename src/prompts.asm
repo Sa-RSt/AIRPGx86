@@ -26,6 +26,10 @@ prompt_template_viability:
     incbin "../prompts/viability.txt"
     db 0
 
+prompt_template_request_with_viability:
+    incbin "../prompts/request_with_viability.txt"
+    db 0
+
 section .text
 
 prompt_replace:  ; rdi = template a usar, r9 = vetor terminado em ponteiro nulo de strings para substituir, rax = (retorno) string processada na heap
