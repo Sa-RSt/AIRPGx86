@@ -1,0 +1,2 @@
+The player requested: $1
+To decide whether or not to roll dice, consider: $2
