@@ -655,6 +655,22 @@ strncpy:  ; rdi = destino, rsi = bloco a copiar, r8 = tamanho máximo
     endif
     epilog
 
+
+strdup:  ; rdi = string a duplicar, rax = (retorno) ponteiro na heap para string duplicada
+    prolog rdi, rsi, r9
+    mov rdi, r9
+    call strend
+    sub rdi, r9  ; agora rdi tem o tamanho da string
+
+    mov rsi, rdi
+    call malloc  ; alocar espaço para copiar a string
+
+    mov rdi, rax
+    mov rsi, r9
+    call strcpy  ; copiar conteúdo para espaço alocado
+    epilog
+
+
 malloc:  ; rsi = tamanho, rax = (retorno) ponteiro para o bloco
     prolog
     syscall_header
