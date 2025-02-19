@@ -1,3 +1,6 @@
+%define DEBUG 1
+global _start
+
 %ifdef TESTING
     %define DEBUG 1
     global _start
@@ -19,21 +22,31 @@ section .bss
 
 section .text
 
-    %ifdef TESTING
-    _start: ; Essa coisa estranha é só um teste pro strcmp
+    _start:
         scanf rbx, 'ss', r8, r9
-        call strcmp
-        call whatever
-        call exit
-
-    whatever:
-        cmp r11, 0
-        je yay
-        jmp _start
+        multipush r8, r9
+        call init_list
+        add rsp, 16
+        scanf rbx, 'ss', r8, r9
+        mov r10, r8
+        multipush r15, r8, r9
+        call add_to_list
+        add rsp, 24
+        scanf rbx, 'ss', r8, r9
+        multipush r15, r8, r9
+        call add_to_list
+        add rsp, 24
+        mov r14, r15
+        jmp yay
 
     yay:
-        ret
-    %endif
+        multipush r15, r10
+        call list_index_search
+        add rsp, 16
+        multipush r15, r10
+        call is_node
+        add rsp, 16
+        call exit
 
 
 
@@ -59,7 +72,7 @@ section .text
         mov esi, [r14 + 4 * rax]
         mov dword[r15 + 4 * rax], esi
         inc rax
-        cmp rax, 8
+        cmp rax, 16
         jl init_index_loop
 
         mov rax, 0
@@ -67,8 +80,8 @@ section .text
         mov esi, [r13 + 4 * rax]
         mov dword [r15 + 64 + 4 * rax], esi
         inc rax
-        cmp rax, 16
-        jl add_info_loop
+        cmp rax, 32
+        jl init_info_loop
 
         epilog ; r15 agora contém o primeiro nó da nova lista
 
@@ -115,10 +128,10 @@ section .text
         cmp r13, 0 ; Vê se node->prox == NULL
         je add_node ; Se sim, node->prox = newnode
         mov r14, [r14 + 192] ; Se não, node = node->prox
-        jmp list_end_loop 
+        jmp list_end_loop
 
         add_node:
-        mov [r14 + 192], r15
+        mov qword [r14 + 192], r15
         epilog
 
 
@@ -147,7 +160,7 @@ section .text
         mov r13, [r15 + 192] ; Verifica se existe mais um elemento na lista
         cmp r13, 0
         je index_search_miss ; Se não, a função retorna -1
-        mov r15, [r13]
+        mov r15, [r15 + 192]
         jmp index_search_loop ; Se sim, volta para o loop e tenta a comparação novamente
 
         index_search_miss:
@@ -171,13 +184,12 @@ section .text
     remove_from_list:
         prolog r14, r13, r11, r9, r8, rdi
         mov r15, [rbp + 24] ; Guarda o endereço da lista
-        mov r14, [rbp + 16] ; Guarda o índice do elemento a ser removido
+        mov r9, [rbp + 16] ; Guarda o índice do elemento a ser removido
         mov r13, 0 ; Esse valor irá guardar o nó anterior para correção de ponteiros
         push r15 ; Guarda o valor do primeiro nó
 
         index_remove_loop: ; Busca o nó a ser removido
         mov r8, r15
-        mov r9, r14
         call strcmp ; Efetua a comparação
         cmp r11, 0 ; r11 == 0 se r8 == r9
         je remove_proper
@@ -185,8 +197,8 @@ section .text
         mov r13, r15 ; Antecessor vira o atual
         mov r11, [r15 + 192] ; Verifica se existe mais um elemento na lista
         cmp r11, 0
-        je remove_epilogue ; Se não existe mais nada na lista, retorna
-        mov r15, [r11] 
+        je remove_none ; Se não existe mais nada na lista, retorna
+        mov r15, [r15 + 192] 
         jmp index_remove_loop ; Se existe, retorna para a comparação
 
         remove_proper: 
@@ -204,9 +216,61 @@ section .text
         mov rdi, r15
         mov r15, [r15 + 192] ; r15 agora aponta pro segundo elemento da lista
         call free ; Free the original first node
+        jmp remove_epilogue
+
+        remove_none:
+        pop r15
 
         remove_epilogue:
             epilog
+
+
+
+
+        ; DEBUG FUNCTIONS. POORLY EXPLAINED AND IN ENGLISH. BUT SURE, USE THEM IF YOU DARE.
+
+
+    ; Gets a pointer to the first element of the list, doesn't return anything. Run add rsp, 8 after.
+    ; This doesn't (currently) print the list. It just works to tell you the amount of elements in it.
+    printlist:
+        prolog r15, r14, r13
+        mov r15, [rbp + 16]
+
+        print_list_loop:
+        cmp r15, 0
+        je print_list_end
+
+        lea r14, [r15 + 64]
+
+        mov r15, [r15 + 192]
+        scanf rbx, 'ss', r13
+        jmp print_list_loop
+
+        print_list_end:
+        epilog
+
+
+    ; Checks if a node has a given index. Send The address of the node / the index you seek
+    ; Run add rsp, 16 after.
+    is_node:
+        prolog r15, r14, r8, r9
+        mov r15, [rbp + 24]
+        mov r14, [rbp + 16]
+
+        cmp r15, 0
+        je exits
+
+        mov r8, r15
+        mov r9, r14
+        call strcmp
+
+        cmp r11, 1
+        je exits
+        scanf rbx, 'ss', r13
+   
+    ; Yep, it sure does exit
+    exits:
+        call exit
 
 
 
