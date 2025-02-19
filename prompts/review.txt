@@ -1,4 +1,3 @@
-Your response to a player's request was:
+Sua resposta ao pedido do jogador foi:
 $1
-
-Review your answer, verifying whether it uses all of the required commands and using the ones you haven't used but should have. Make sure that, if necessary, you have used [update] to update HP, stamina or luck. If the player is now in a different place, you must update their location with the [travel] command. If the player has obtained or lost an item, you must use [give] or [take] respectively. YOU MUST NOT USE THE [roll] COMMAND NOW.
+Revise sua resposta, verificando se ela usou todos os comandos necessários. Se faltou algum comando, coloque-o agora. Certifique-se que, se necessário, usou [update] para atualizar pontos de saúde, vigor ou sorte. Se o jogador obteve um item, você deve usar [give] para colocar o item em seu inventário. Se usou ou perdeu um item, use [take] para retirar o item do inventário. NÃO USE O COMMANDO [roll] AGORA.

@@ -1,3 +1,3 @@
-The player requested:
+O jogador solicitou:
 $1
-Make a list of things that could go wrong with the player's request, with the purpose of deciding dice rolls. If the action is trivial, such as walking in a well lit environment or eating something that isn't poisoned when the player isn't injured in a way that would make such activities harder, just write "This action is trivial and no rolls are needed.". Otherwise, output "The following could go wrong: " and then the list.
+Faça um pequeno texto descrevendo as coisas que podem dar errado com o pedido do jogador, com o propósito de decidir rolagens de dado. Se a ação pedida for trivial, como andar em um ambiente bem iluminado ou comer um alimento que não está envenenado, sendo que o jogador não está ferido ou ocupado de forma que essas atividades seriam mais difíceis, só escreva "Essa ação é trivial e nenhum dado é necessário.". Caso contrário, pense em tudo o que pode dar errado.

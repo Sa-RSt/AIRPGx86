@@ -1,1 +1,3 @@
-I'm trying to come up with an unambiguous and creative general theme description that defines the theme for a singleplayer RPG adventure. So far, I've come up with $1. Generate a theme description that includes worldbuilding related information and the player's location. Your output must be just the theme description, therefore you may not include additional output such as "Sure! Here is the theme description.".
+Estou tentando pensar em uma descrição de tema geral, criativa e não-ambígua que defina o tema de uma aventura RPG de um só jogador. Até agora, pensei em:
+$1
+Gere uma descrição de tema que inclua informações relacionadas ao mundo (worldbuilding) e a localização do jogador. Gere somente a descrição. Logo, você não incluirá informações adicionais como "Claro! Segue a descrição do tema.".

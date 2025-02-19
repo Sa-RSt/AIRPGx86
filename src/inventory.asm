@@ -9,8 +9,8 @@
 section .data
     inventory_field_amount: equ 0
     inventory_field_description: equ 8
-    inventory_prompt_empty_string: db "The player's inventory is currently empty.", 0
-    inventory_prompt_currently_contains: db "The player's inventory currently contains:", 0
+    inventory_prompt_empty_string: db "Atualmente, o inventário do jogador está vazio.", 0
+    inventory_prompt_currently_contains: db "Atualmente, o inventário do jogador contém:", 0
     inventory_string_list_sep: db 10, " - ", 0
     inventory_string_list_colon: db ": ", 0
     inventory_string_amount_open: db " (amount: ", 0
@@ -185,9 +185,9 @@ inventory_to_prompt_string:
 ; r15 = endereço para o primeiro item do inventário (null se estiver vazio)
 print_inventory:
     prolog r8, r15
-    printf 'ssss', color_bold, color_yellow, "Inventory", color_faint, ":", color_reset
+    printf 'ssss', color_bold, color_yellow, "Inventário", color_faint, ":", color_reset
     ifzero r15  ; inventário vazio
-        printf 'cssc', 10, color_faint, "    ~ empty ~", color_reset, 10
+        printf 'cssc', 10, color_faint, "    ~ vazio ~", color_reset, 10
     else
         whilenonzero r15
             mov r8, [r15+64]

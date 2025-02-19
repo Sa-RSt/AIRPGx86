@@ -1,2 +1,2 @@
-The player requested: $1
-To decide whether or not to roll dice, consider: $2
+O jogador pediu: $1
+Para decidir se irá ou não rolar dados, considere: $2
