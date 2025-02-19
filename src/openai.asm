@@ -47,9 +47,7 @@ openai_init_subprocess:
     syscall
     if e, rax, -1
         print_literal "FATAL: failed to spawn OpenAI subprocess.", 0x0A
-        mov rax, 0x3C  ; sys_exit
-        mov rdi, 1
-        syscall
+        call exit
     elifzero rax
         mov rax, 0x21  ; sys_dup2
         xor rdi, rdi
