@@ -144,6 +144,23 @@ openai_read_string:  ; rax = (retorno) ponteiro para a string lida
     epilog
 
 
+openai_skip_string:  ; lê uma string do subprocesso, ignorando seu valor. não recebe parâmetros e não retorna valores
+    prolog r15
+    syscall_header
+    sub rsp, 8
+    dowhilenonzero r15b  ; parar se r15b for zero
+        xor rax, rax  ; sys_read
+        xor rdi, rdi
+        mov edi, [openai_subprocess_pipe_incoming]
+        mov rsi, rsp  ; colocar o byte na stack
+        mov rdx, 1  ; um byte
+        syscall
+        mov r15b, [rsp]  ; colocar byte lido no r15b
+    enddowhile
+    add rsp, 8
+    syscall_footer
+    epilog
+
 openai_shutdown_subprocess:
     prolog rax
     mov rax, -1
