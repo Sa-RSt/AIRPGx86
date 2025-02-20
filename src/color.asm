@@ -28,4 +28,12 @@ color_cyan: db 27, "[36m", 0
 color_brightcyan: db 27, "[96m", 0
 color_gray: db 27, "[37m", 0
 color_white: db 27, "[01m", 0
+
+%assign i 0
+%rep 256
+    color_by_id_%[i]: db 27, "[38;5;", %str(i), "m", 0
+    %assign i i + 1
+%endrep
+%undef i
+
 %endif
