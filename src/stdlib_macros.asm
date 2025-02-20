@@ -378,6 +378,15 @@ section .text
     %endif
     xor scanf_out_count, scanf_out_count
     %rep %0 - 3
+        %ifidni %1, rax
+            %error %1 " must not be an output register. Please pick another one." 
+        %elifidni %1, rsi
+            %error %1 " must not be an output register. Please pick another one." 
+        %elifidni %1, rdi
+            %error %1 " must not be an output register. Please pick another one." 
+        %elifidni %1, r13
+            %error %1 " must not be an output register. Please pick another one." 
+        %endif
         %ifstr %1
             %error "fscanf does not accept literals: " %1
         %else
