@@ -797,6 +797,60 @@ read_until_whitespace:  ; rax = (retorno) ponteiro para a string lida, rdi = fil
     syscall_footer
     epilog
 
+to_upper: ; rsi = string pra ler, rdi = (retorno) string in letra maiúscula
+    prolog rax, rsi, rbx
+    mov rax, 0
+
+    to_upper_loop:
+    mov bl, byte[rsi]
+
+    cmp bl, 0h
+    je to_upper_end
+
+    cmp bl, 0x61
+    jl to_upper_next
+    cmp bl, 0x7A
+    jg to_upper_next
+
+    sub bl, 0x20
+
+    to_upper_next:
+    mov byte [rdi + rax], bl
+    inc rsi
+    inc rax
+    jmp to_upper_loop
+
+    to_upper_end:
+    mov byte [rdi + rax], 0x00
+    epilog
+
+to_lower: ; rsi = string pra ler, rdi = (retorno) string in letra minúscula
+    prolog rax, rsi, rbx
+    mov rax, 0
+
+    to_lower_loop:
+    mov bl, byte[rsi]
+
+    cmp bl, 0h
+    je to_lower_end
+
+    cmp bl, 0x41
+    jl to_lower_next
+    cmp bl, 0x5A
+    jg to_lower_next
+
+    add bl, 0x20
+
+    to_lower_next:
+    mov byte [rdi + rax], bl
+    inc rsi
+    inc rax
+    jmp to_lower_loop
+
+    to_lower_end:
+    mov byte [rdi + rax], 0x00
+    epilog
+
 atou:  ; rax = (retorno) número lido, r13 = (retorno) zero se o número for válido, rsi = string para ler
     prolog rdx, r9, rdi, rsi, r8, r14
     xor r14, r14
