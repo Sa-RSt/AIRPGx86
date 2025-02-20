@@ -1,5 +1,5 @@
-%ifndef LINKED_LIST
-%define LINKED_LIST 1
+%define DEBUG 1
+global _start
 
 %ifdef TESTING
     %define DEBUG 1
@@ -21,8 +21,8 @@ section .bss
     info_bytes: resb 128
 
 section .text
-    %ifdef TESTING
-    _start:
+
+    LinkedList_test:
         scanf rbx, 'ss', r8, r9
         multipush r8, r9
         call init_list
@@ -47,7 +47,7 @@ section .text
         call is_node
         add rsp, 16
         call exit
-    %endif
+
 
 
 
@@ -112,7 +112,7 @@ section .text
         mov esi, [r13 + 4 * rax]
         mov dword [r15 + 4 * rax], esi
         inc rax
-        cmp rax, 8
+        cmp rax, 16
         jl add_index_loop
 
         mov rax, 0 ; Adiciona a informação no novo nó
@@ -120,7 +120,7 @@ section .text
         mov esi, [r12 + 4 * rax]
         mov dword [r15 + 64 + 4 * rax], esi
         inc rax
-        cmp rax, 16
+        cmp rax, 32
         jl add_info_loop
 
         list_end_loop: ; Encontra o último nó da lista atual
@@ -273,5 +273,4 @@ section .text
         call exit
 
 
-%endif
 
