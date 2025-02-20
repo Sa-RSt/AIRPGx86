@@ -233,7 +233,7 @@ section .text
     ; Gets a pointer to the first element of the list, doesn't return anything. Run add rsp, 8 after.
     ; This doesn't (currently) print the list. It just works to tell you the amount of elements in it.
     printlist:
-        prolog r15, r14, r13
+        prolog r15, r14, r13, r12
         mov r15, [rbp + 16]
 
         print_list_loop:
@@ -243,7 +243,7 @@ section .text
         lea r14, [r15 + 64]
 
         mov r15, [r15 + 192]
-        scanf rbx, 'ss', r13
+        scanf rbx, 's', r12
         jmp print_list_loop
 
         print_list_end:
@@ -266,7 +266,7 @@ section .text
 
         cmp r11, 1
         je exits
-        scanf rbx, 'ss', r13
+        scanf rbx, 's', r12
    
     ; Yep, it sure does exit
     exits:
