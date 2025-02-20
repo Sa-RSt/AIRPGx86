@@ -89,7 +89,7 @@ section .text
 
 
 ; r11 = tema elaborado
-; r8 = vetor de 3 u64s (HP, STAM e LUCK)
+; r8 = vetor de 3 i64s (HP, STAM e LUCK)
 ; r9 = vetor de 7 u64s (STR, CON, DEX, WIS, INT, CHA, PER)
 ; r10 = endereço do inventário
 ; rax = (retorno) prepend com tudo preenchido
@@ -170,7 +170,7 @@ _conversation_clear_garbage:  ; dá free nos ponteiros marcados como lixo. não 
 
 
 ; r11 = tema elaborado
-; r8 = vetor de 3 u64s (HP, STAM e LUCK)
+; r8 = vetor de 3 i64s (HP, STAM e LUCK)
 ; r9 = vetor de 7 u64s (STR, CON, DEX, WIS, INT, CHA, PER)
 ; r10 = endereço do inventário
 ; rax = (retorno) endereço para a lista encadeada
@@ -280,7 +280,7 @@ conversation_context_pop:
 
 
 ; r11 = tema elaborado
-; r8 = vetor de 3 u64s (HP, STAM e LUCK)
+; r8 = vetor de 3 i64s (HP, STAM e LUCK)
 ; r9 = vetor de 7 u64s (STR, CON, DEX, WIS, INT, CHA, PER)
 ; r10 = endereço do inventário
 ; rax = (retorno) string com resposta do LLM, ou NULL se o contexto estiver vazio
@@ -319,7 +319,7 @@ conversation_context_send_to_openai:
 
 
 ; r11 = tema elaborado
-; r8 = vetor de 3 u64s (HP, STAM e LUCK)
+; r8 = vetor de 3 i64s (HP, STAM e LUCK)
 ; r9 = vetor de 7 u64s (STR, CON, DEX, WIS, INT, CHA, PER)
 ; r10 = endereço do inventário
 ; rax = (retorno) string com a descrição inicial
@@ -357,7 +357,7 @@ conversation_initial_description:
 
 
 ; r11 = tema elaborado
-; r8 = vetor de 3 u64s (HP, STAM e LUCK)
+; r8 = vetor de 3 i64s (HP, STAM e LUCK)
 ; r9 = vetor de 7 u64s (STR, CON, DEX, WIS, INT, CHA, PER)
 ; r10 = endereço do inventário
 ; r12 = pedido do jogador
