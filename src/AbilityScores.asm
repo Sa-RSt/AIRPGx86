@@ -1,3 +1,6 @@
+%ifndef ABILITY_SCORES
+%define ABILITY_SCORES 1
+
 %define DEBUG 1
 global _start
 
@@ -31,6 +34,7 @@ section .data
     desc_int: db "Inteligência. Capacidade de aprender, entender e aplicar conhecimentos pontuais", 0
     desc_cha: db "Carisma. Habilidade de influenciar as pessoas ao seu redor", 0
     desc_per: db "Percepção. Conhecimento de seus arredores, permitindo melhor navegação pelo ambiente", 0
+    att_use_help: db "Digite o nome do atributo e quantos pontos você deseja adicionar : ", 0
 
 section .bss
 
@@ -52,8 +56,12 @@ section .text
             push r15
             call print_attributes
             add rsp, 8
+            printf 'cs', 0xA, att_use_help
 
             scanf rbx, 'si', r14, r9
+            mov rsi, r14
+            call to_upper
+            mov r14, rdi
             multipush r15, r14, r9, r12
             call try_add_attributes
             add rsp, 32
@@ -229,7 +237,7 @@ section .text
         jl add_att_epilogue
         cmp r13, 16
         jg add_att_epilogue
-        cmp r13, 0
+        cmp r13, -16
         jl add_att_epilogue
 
         search_att_index:
@@ -244,6 +252,8 @@ section .text
         jmp search_att_index
 
         valid_att_check:
+        cmp r13, 0
+        jl dec_attribute
         lea r14, [r15 + 184]
         mov r14, [r14]
         mov r8, r14
@@ -253,6 +263,21 @@ section .text
         sub r12, r13
         add r14, r13
         mov [r15 + 184], r14
+        jmp add_att_epilogue
+
+        dec_attribute:
+        neg r13
+        lea r14, [r15 + 184]
+        mov r14, [r14]
+        mov r8, r14
+        sub r8, r13
+        cmp r8, 0
+        jl add_att_epilogue
+        add r12, r13
+        sub r14, r13
+        mov [r15 + 184], r14
+
         add_att_epilogue:
         epilog
 
+%endif
