@@ -1,5 +1,5 @@
-%define DEBUG 1
-global _start
+%ifndef LINKED_LIST
+%define LINKED_LIST 1
 
 %ifdef TESTING
     %define DEBUG 1
@@ -273,4 +273,4 @@ section .text
         call exit
 
 
-
+%endif
