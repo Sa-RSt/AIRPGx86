@@ -42,11 +42,6 @@ section .bss
 
 section .text
 
-    _start:
-        call init_attributes
-        call use_ability_points 
-        call exit
-
     use_ability_points:
         prolog r14, r12, r9
         mov r12, 21
