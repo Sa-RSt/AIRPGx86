@@ -19,6 +19,7 @@ section .data
     welcome: db "Bem vindo ao RPGPT! Esse jogo se trata de um RPG normal em que o seu DM é o chatGPT, sem mais delongas, vamos começar o jogo!", 0x0A, 0
     whatname: db "Qual é o seu nome? : ", 0
     whattheme: db "Qual será o tema da sua aventura? : ", 0
+    invalidname: db "Nome inválido! O limíte são 32 caracteres!", 0
 
 section .bss
 
@@ -49,6 +50,7 @@ section .text
         call conversation_initial_description
         printf "s", rax ; Imprime a descrição inicial
         call openai_shutdown_subprocess
+        printf "s", PlayerName
         call exit
         ret
     
@@ -57,15 +59,28 @@ section .text
     choose_name:
         prolog rdi, rsi, r14
 
+        choose_name_loop:
         printf "s", whatname
         mov rdi, 0
         call read_line
         mov rsi, rax
         mov rdi, PlayerName
         call strcpy
-        printf "c", 0x0A
+        mov rsi, rdi
+        call strsiz
+        cmp rdi, 32
+        jg choose_name_invalid
+        jmp choose_name_end
 
+        choose_name_invalid:
+        printf "sc", invalidname, 0x0A
+        jmp choose_name_loop
+
+        choose_name_end:
+        printf "c", 0x0A
         epilog
+
+
 
     theme_ask:
         prolog
