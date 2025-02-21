@@ -25,8 +25,8 @@ dice_roll_str_advantage: db "advantage", 0
 dice_roll_str_disadvantage: db "disadvantage", 0
 dice_roll_str_empty: db 0
 dice_roll_spinner: db "-\\|/", 0
-dice_roll_str_sucesso: db " (sucesso)", 0
-dice_roll_str_falhou: db " (falhou)", 0
+dice_roll_str_sucesso: db " (sucesso)", 10, 0
+dice_roll_str_falhou: db " (falhou)", 10, 0
 section .bss
 
 dice_roll_feedback: resb 65536
@@ -88,6 +88,7 @@ dice_roll_N_M:  ; r12 = N (número de dados), r13 = M (número de lados)
         endif
         call utoa
         call strend
+        mov r9, rdi
     endfor
 
     mov rsi, dice_roll_str_Soma
@@ -162,7 +163,7 @@ dice_roll_for_ability_score:  ; r15 = lista de ability scores, r13 = código, r8
 
         printf 'sssss', color_reset, "Rolando ", color_brightmagenta, r13, color_reset, "...", color_cyan
         call make_spinner
-        printf 'sussc', "  ", color_bold, rax, rsi, color_reset, 10
+        printf 'suss', "  ", color_bold, rax, rsi, color_reset
     else
         mov r9, dice_roll_str_advantage
         call strcmp
@@ -183,6 +184,9 @@ dice_roll_for_ability_score:  ; r15 = lista de ability scores, r13 = código, r8
                 mov rax, rdx
             endif
 
+            call utoa
+            call strend
+
             if l, rax, r10
                 mov rsi, dice_roll_str_falhou
                 call strcpy
@@ -193,12 +197,11 @@ dice_roll_for_ability_score:  ; r15 = lista de ability scores, r13 = código, r8
                 call strend
             endif
 
-            call utoa
             call strend
 
             printf 'sssss', color_reset, "Rolando ", color_brightmagenta, r13, " com vantagem", color_reset, "...", color_cyan
             call make_spinner
-            printf 'sussc', "  ", color_bold, rax, rsi, color_reset, 10
+            printf 'suss', "  ", color_bold, rax, rsi, color_reset
         else
             mov r9, dice_roll_str_disadvantage
             call strcmp
@@ -221,6 +224,9 @@ dice_roll_for_ability_score:  ; r15 = lista de ability scores, r13 = código, r8
                 mov rax, rdx
             endif
 
+            call utoa
+            call strend
+
             if l, rax, r10
                 mov rsi, dice_roll_str_falhou
                 call strcpy
@@ -231,12 +237,9 @@ dice_roll_for_ability_score:  ; r15 = lista de ability scores, r13 = código, r8
                 call strend
             endif
 
-            call utoa
-            call strend
-
             printf 'sssss', color_reset, "Rolando ", color_brightmagenta, r13, " com desvantagem", color_reset, "...", color_cyan
             call make_spinner
-            printf 'sussc', "  ", color_bold, rax, rsi, color_reset, 10
+            printf 'suss', "  ", color_bold, rax, rsi, color_reset
         endif
     endif
 
@@ -381,7 +384,7 @@ make_spinner:
 
     global _start
 
-    _start:
+    ;_start:
         call init_attributes
         call use_ability_points
         mov r13, att_dex

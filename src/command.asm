@@ -69,6 +69,8 @@ interpret_commands:  ; rdi = mensagem escrita pelo LLM, rdi = (retorno) mensagem
             mov byte [r11], 0  ; marcar o colchete como fim da string também. agora r15 é uma string completa só com os argumentos
             mov r8, rdi
             mov rsi, command_call_lookup_table
+            mov rdi, r11
+            inc rdi
             mov r9, [rsi]
             whilenonzero r9  ; buscar comando correspondente na tabela de lookup
                 call strcmp
@@ -79,9 +81,6 @@ interpret_commands:  ; rdi = mensagem escrita pelo LLM, rdi = (retorno) mensagem
                 add rsi, 16
                 mov r9, [rsi]
             endwhile
-            call strend  ; coloca rdi no começo dos argumentos
-            call strend  ; coloca rdi no final dos argumentos
-            inc rdi  ; coloca rdi depois do comando
         else
             mov [r14], r8b
             inc r14
@@ -100,7 +99,7 @@ interpret_commands:  ; rdi = mensagem escrita pelo LLM, rdi = (retorno) mensagem
 
 
 interpret_roll_command:  ; r15 = string com os parâmetros do comando
-    prolog r8, r9, r11, r12, rsi, rax, r13, r14
+    prolog r8, r9, r11, r12, rsi, rax, r13, r14, rdi
     mov r9, command_str_advantage
     mov r8, r15
     call strstartswith
@@ -120,9 +119,9 @@ interpret_roll_command:  ; r15 = string com os parâmetros do comando
             call dice_roll_single_number
             jmp .return
         else  ; rolar um status com vantagem
-            mov r15, [command_abilities_address]
             mov r13, rsi
             mov r8, r15
+            mov r15, [command_abilities_address]
             call dice_roll_for_ability_score
             jmp .return
         endif
@@ -145,9 +144,9 @@ interpret_roll_command:  ; r15 = string com os parâmetros do comando
                 call dice_roll_single_number
                 jmp .return
             else  ; rolar um status com desvantagem
-                mov r15, [command_abilities_address]
                 mov r13, rsi
                 mov r8, r15
+                mov r15, [command_abilities_address]
                 call dice_roll_for_ability_score
                 jmp .return
             endif
@@ -188,7 +187,7 @@ interpret_roll_command:  ; r15 = string com os parâmetros do comando
     epilog
 
 interpret_update_command:  ; r15 = string com os parâmetros do comando
-    prolog r12, r15, r8, rsi, r13, r14
+    prolog r12, r15, r8, rsi, r13, r14, rdi
     mov r12, r15  ; r15 terá o código
     mov r8b, [r12]
     while ne, r8b, ' '
@@ -215,7 +214,7 @@ interpret_update_command:  ; r15 = string com os parâmetros do comando
     epilog
 
 interpret_give_command:  ; r15 = string com os parâmetros do comando
-    prolog r15, r12, r8, r9, rsi, r13, r14
+    prolog r15, r12, r8, r9, rsi, r13, r14, rdi
     mov r13, r15
     mov r8b, [r13]
     while ne, r8b, '|'
@@ -254,7 +253,7 @@ interpret_give_command:  ; r15 = string com os parâmetros do comando
     epilog
 
 interpret_take_command:  ; r15 = string com os parâmetros do comando
-    prolog r15, r12, r8, r9, rsi, r13, r14
+    prolog r15, r12, r8, r9, rsi, r13, r14, rdi
     mov r13, r15
     mov r8b, [r13]
     while ne, r8b, '|'
@@ -282,11 +281,12 @@ interpret_take_command:  ; r15 = string com os parâmetros do comando
 %ifdef TESTING
 
 section .data
-
+section .bss
+_command_test: resq 3
 section .text
 global _start
 
-_start:
+;_start:
     mov qword [command_inventory_address], 0
     call status_init_list
     mov [command_status_address], r15
@@ -300,8 +300,14 @@ _start:
     call interpret_commands
     mov rsi, rdi
     call println
+    mov r15, [command_inventory_address]
     call print_inventory
+    mov r15, [command_status_address]
     call print_status
+    mov r8, _command_test
+    call status_values_array
+    mov r8, [r8+16]
+    printf 'ic', "Luck ", r8, 10
     mov rsi, dice_roll_feedback
     call println
     call exit

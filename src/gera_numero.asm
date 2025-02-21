@@ -11,7 +11,7 @@ section .text
     %include "stdlib_macros.asm"           ; Inclui o arquivo de macros
 
 %ifdef TESTING
-_start:
+;_start:
     mov rdi, 20         ; Valor de n para a função gera_numero
     call gera_numero
     call exit

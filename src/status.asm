@@ -285,7 +285,7 @@ print_status:  ; r15 = lista de status
     _str_status_test_25: db "25", 0
 
     section .text
-    _start:
+    ;_start:
         call status_init_list
         mov r14, status_str_HP
         mov r13, -7
