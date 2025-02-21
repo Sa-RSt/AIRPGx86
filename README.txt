@@ -1,3 +1,8 @@
+Alunos:
+    - Fabrício Morais Muller, RA: 168829
+    - Gabriel Garcia Almeida, RA: 168857
+    - Sasha Rodela Steidle, RA: 169233
+
 Para executar o projeto:
     1. Navegue para a pasta src/ usando o comando "cd". Isso é essencial para o assembler buscar os arquivos corretos.
     2. Use o assembler nasm (testado 2.16.03) no arquibo InitGame.asm:
