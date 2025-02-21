@@ -872,6 +872,26 @@ to_lower: ; rsi = string pra ler, rdi = (retorno) string in letra minúscula
     mov byte [rdi + rax], 0x00
     epilog
 
+
+trim:  ; rsi = string e (retorno) começo da string sem considerar espaços, r9 = final da string sem considerar espaços
+    prolog r8, rdi
+    mov r8b, [rsi]
+    while e, r8b, ' '
+        inc rsi
+        mov r8b, [rsi]
+    endwhile
+
+    mov rdi, rsi
+    call strend
+    mov r9, rdi
+    dec r9
+    mov r8b, [r9]
+    while e, r8b, ' '
+        dec r9
+        mov r8b, [r9]
+    endwhile
+    epilog
+
 strsiz: ; rsi = string para ler, rdi = (retorno) tamanho da string terminada em 0
     prolog rsi, rax
     mov rdi, 0
