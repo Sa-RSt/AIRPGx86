@@ -10,6 +10,7 @@
 global _start
 
 %include "AbilityScores.asm"
+%include "status.asm"
 %include "openai.asm"
 
 section .data
@@ -24,22 +25,32 @@ section .text
 
     _start:
     game_starter:
+        call openai_init_subprocess
+        call exposition_dumping
         call choose_name
         call init_attributes
         call use_ability_points
-
+        call status_init_list
+        call exit
     
 
 
     choose_name:
-        prolog r14
+        prolog rdi, rsi, r14
 
         printf "s", whatname
-        mov r14, PlayerName
-        scanf rbx, "s", r14 
-        mov r14, r10
-        mov r12, PlayerName
-        printf "s", PlayerName
+        mov rdi, PlayerName
+        scanf rbx, "s", r14
+        printf "c", 0x0A
+        mov rsi, r14
+        call strcpy
+
+        epilog
+
+
+
+    exposition_dumping:
+        prolog
 
         epilog
 
