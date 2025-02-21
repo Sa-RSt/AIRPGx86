@@ -851,6 +851,20 @@ to_lower: ; rsi = string pra ler, rdi = (retorno) string in letra minúscula
     mov byte [rdi + rax], 0x00
     epilog
 
+strsiz: ; rsi = string para ler, rdi = (retorno) tamanho da string terminada em 0
+    prolog rsi, rax
+    mov rdi, 0
+
+    strsiz_loop:
+    mov al, byte [rsi + rdi]
+    cmp al, 0h
+    je strsiz_end
+    inc rdi
+    jmp strsiz_loop
+
+    strsiz_end:
+    epilog
+
 atou:  ; rax = (retorno) número lido, r13 = (retorno) zero se o número for válido, rsi = string para ler
     prolog rdx, r9, rdi, rsi, r8, r14
     xor r14, r14
