@@ -289,8 +289,8 @@ section .text
 att_values_array:  ; r15 = lista de atributos, r9 = ponteiro para onde será colocado o vetor de 64s (na ordem da lista)
     prolog r15, r9, rbx
     whilenonzero r15
-        lea rbx, [r15 + 184]  ; ler valor do atributo
-        mov r9, [rbx]  ; transferir o valor para o vetor
+        mov rbx, [r15 + 184]  ; ler valor do atributo
+        mov [r9], rbx  ; transferir o valor para o vetor
         mov r15, [r15 + 192]  ; próximo elemento da lista
         add r9, 8
     endwhile
