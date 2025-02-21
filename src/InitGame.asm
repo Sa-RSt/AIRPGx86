@@ -19,7 +19,7 @@ section .data
     welcome: db "Bem vindo ao RPGPT! Esse jogo se trata de um RPG normal em que o seu DM é o chatGPT, sem mais delongas, vamos começar o jogo!", 0x0A, 0
     whatname: db "Qual é o seu nome? : ", 0
     whattheme: db "Qual será o tema da sua aventura? : ", 0
-    invalidname: db "Nome inválido! O limíte são 32 caracteres!", 0
+    invalidname: db "Nome inválido! O nome deve ter menos que 32 caracteres!", 0
 
 section .bss
 
