@@ -16,7 +16,7 @@ section .data
     ability_desc: equ 64
     ability_value: equ 184
 
-    ability_loop_prompt1: db "Você tem ", 0
+    ability_loop_prompt1: db ", você tem ", 0
     ability_loop_prompt2: db " pontos de habilidade disponíveis", 0xA, 0
 
     att_str: db "STR", 0 ; Força
@@ -35,6 +35,7 @@ section .data
     desc_cha: db "Carisma. Habilidade de influenciar as pessoas ao seu redor", 0
     desc_per: db "Percepção. Conhecimento de seus arredores, permitindo melhor navegação pelo ambiente", 0
     att_use_help: db "Digite o nome do atributo e quantos pontos você deseja adicionar : ", 0
+    these_your_atts: db ", esses serão seus atributos!", 0
 
 section .bss
 
@@ -46,7 +47,7 @@ section .text
         prolog r14, r12, r9
         mov r12, 21
         whilenonzero r12
-            printf 'sis', ability_loop_prompt1, r12, ability_loop_prompt2
+            printf 'ssis', PlayerName, ability_loop_prompt1, r12, ability_loop_prompt2
 
             push r15
             call print_attributes
@@ -64,6 +65,7 @@ section .text
         endwhile
 
         push r15
+        printf "css", 0x0A, PlayerName, these_your_atts
         call print_attributes
         add rsp, 8
 
@@ -154,6 +156,7 @@ section .text
     print_attributes:
         prolog r15, r14, r13, r11, r9, r8
         mov r15, [rbp + 16]
+        printf "c", 0x0A
         print_attributes_loop:
 
         mov r8, r15
