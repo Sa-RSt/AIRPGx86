@@ -45,7 +45,7 @@ section .text
 
 ; Endereço da lista de habilidades deve estar em r15!
     use_ability_points:
-        prolog r14, r12, r9
+        prolog r15, r14, r12, r9
         mov r12, 21
         whilenonzero r12
             printf 'ssis', PlayerName, ability_loop_prompt1, r12, ability_loop_prompt2
@@ -224,6 +224,10 @@ section .text
 ; Recebe como parâmetros, nessa ordem, O endereço da lista, as duas strings
 ; escaneadas, e a quantidade de pontos que ainda podem ser gastos
 
+; Usar essa função pra atualizar os atributos depois... deve funcionar.
+; É só mandar um valor absurdo no quarto parâmetro que deve funcionar de boa.
+; Se não funcionar de boa, me avisem
+
 ; Depois de usar, rode "add rsp, 32"
     try_add_attributes:
         prolog r15, r14, r13, r9, r8
@@ -279,4 +283,18 @@ section .text
         add_att_epilogue:
         epilog
 
+
+
+
+att_values_array:  ; r15 = lista de atributos, r9 = ponteiro para onde será colocado o vetor de 64s (na ordem da lista)
+    prolog r15, r9, rbx
+    whilenonzero r15
+        lea rbx, [r15 + 184]  ; ler valor do atributo
+        mov r9, [rbx]  ; transferir o valor para o vetor
+        mov r15, [r15 + 192]  ; próximo elemento da lista
+        add r9, 8
+    endwhile
+    epilog
+
 %endif
+
