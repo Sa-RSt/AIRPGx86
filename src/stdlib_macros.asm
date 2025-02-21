@@ -857,9 +857,9 @@ strsiz: ; rsi = string para ler, rdi = (retorno) tamanho da string terminada em 
 
     strsiz_loop:
     mov al, byte [rsi + rdi]
+    inc rdi
     cmp al, 0h
     je strsiz_end
-    inc rdi
     jmp strsiz_loop
 
     strsiz_end:
