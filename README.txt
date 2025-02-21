@@ -13,9 +13,7 @@ Para executar o projeto:
         ../RPGPT
 
 ATENÇÃO:
-     - Para assemblar o programa, coloque um arquivo chamado .openai-api-key (sem extensão) contendo uma chave de api da OpenAI
-    no diretório principal do projeto. Deixamos aqui um arquivo com alguns créditos, suficiente para teste. Esse arquivo será
-    incluído pelo assembler no executável binário.
+    - Para assemblar o programa, coloque um arquivo chamado .openai-api-key (sem extensão) contendo uma chave de api da OpenAI no diretório principal do projeto. Deixamos na pasta compactada no Google Classroom um arquivo com alguns créditos, suficiente para teste. Fique à vontade para usá-lo. Esse arquivo será incluído pelo assembler no executável binário.
 
     - Os prompts na pasta prompts/ também devem estar acessíveis durante a assemblagem.
 
