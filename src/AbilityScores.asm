@@ -85,7 +85,7 @@ section .text
         mov rdi, ByteBlock
         call strcpy
         lea r15, [rdi + 120]
-        mov r15, 0
+        mov qword [r15], 2
         multipush r14, rdi
         call init_list
         add rsp, 16
@@ -95,7 +95,7 @@ section .text
         mov rdi, ByteBlock
         call strcpy
         lea r14, [rdi + 120]
-        mov r14, 0
+        mov qword [r14], 2
         multipush r15, r13, rdi
         call add_to_list
         add rsp, 24
@@ -105,7 +105,7 @@ section .text
         mov rdi, ByteBlock
         call strcpy
         lea r14, [rdi + 120]
-        mov r14, 0
+        mov qword [r14], 2
         multipush r15, r13, rdi
         call add_to_list
         add rsp, 24
@@ -115,7 +115,7 @@ section .text
         mov rdi, ByteBlock
         call strcpy
         lea r14, [rdi + 120]
-        mov r14, 0
+        mov qword [r14], 2
         multipush r15, r13, rdi
         call add_to_list
         add rsp, 24
@@ -125,7 +125,7 @@ section .text
         mov rdi, ByteBlock
         call strcpy
         lea r14, [rdi + 120]
-        mov r14, 0
+        mov qword [r14], 2
         multipush r15, r13, rdi
         call add_to_list
         add rsp, 24
@@ -135,7 +135,7 @@ section .text
         mov rdi, ByteBlock
         call strcpy
         lea r14, [rdi + 120]
-        mov r14, 0
+        mov qword [r14], 2
         multipush r15, r13, rdi
         call add_to_list
         add rsp, 24
@@ -145,7 +145,7 @@ section .text
         mov rdi, ByteBlock
         call strcpy
         lea r14, [rdi + 120]
-        mov r14, 0
+        mov qword [r14], 2
         multipush r15, r13, rdi
         call add_to_list
         add rsp, 24

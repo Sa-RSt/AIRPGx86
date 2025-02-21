@@ -2,3 +2,4 @@ build/
 .openai-api-key
 *.o
 *.out
+RPGPT

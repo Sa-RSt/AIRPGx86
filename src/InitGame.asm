@@ -64,6 +64,7 @@ section .text
     interactive_loop:
         prolog
         .forever:
+        call check_death
         mov r8b, [dice_roll_feedback]
         ifnonzero r8b
             mov r8, conversation_role_user
@@ -100,6 +101,7 @@ section .text
         call strdup
         call interpret_commands
         push rdi
+        call check_death
 
         call update_prepend_params
         mov r12, rax
@@ -107,6 +109,7 @@ section .text
         mov rdi, rax
         call interpret_commands
         pop rsi
+        call check_death
         call print
         jmp .forever
         epilog
@@ -120,8 +123,19 @@ section .text
         mov r11, [command_theme_address]
         mov r9, att_array
         mov r10, [command_inventory_address]
+        call check_death
         epilog
 
+    check_death:
+        prolog rcx, r15, r8
+        mov r8, stat_array
+        mov r15, [command_status_address]
+        mov rcx, [stat_array]
+        ifzero rcx
+            printf 'ssc', color_red, "Você morreu! :(", color_reset, 10
+            call exit
+        endif
+        epilog
 
     choose_name:
         prolog rdi, rsi, r14

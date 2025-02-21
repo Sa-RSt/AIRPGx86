@@ -51,7 +51,7 @@ def write_status_error():
 def make_api_request(context, api_key):
     body = {
         'model': 'gpt-4o',
-        'temperature': .6,
+        'temperature': .4,
         'messages': context,
     }
     ser = json.dumps(body).encode()
@@ -87,4 +87,7 @@ def main():
         else:
             write_status_error()
 
-main()
+try:
+    main()
+except KeyboardInterrupt:
+    pass
