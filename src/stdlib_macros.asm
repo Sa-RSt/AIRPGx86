@@ -954,6 +954,31 @@ atou_hex:  ; rax = (retorno) número lido, r13 = (retorno) zero se o número for
     .success:
     epilog
 
+
+delay:  ; r10 = número mínimo de milissegundos para suspender execução
+    prolog rax, r10
+    syscall_header
+    sub rsp, 16  ; criar timespec
+    mov rax, r10
+    xor rdx, rdx
+    mov r10, 1000
+    div r10
+    mov [rsp], rax  ; segundos inteiros
+    mov rax, rdx
+    xor rdx, rdx
+    mov r10, 1000000
+    mul r10
+    mov [rsp+8], rax  ; nanossegundos
+
+    mov rax, 0x23  ; sys_nanosleep
+    mov rdi, rsp
+    xor rsi, rsi
+    syscall
+    add rsp, 16
+    syscall_footer
+    epilog
+
+
 exit:
     mov rax, 60                             	    ; Carrega o número da syscall para "exit" (número 60) no registrador rax
     mov rdi, 0                              	    ; Carrega o valor de saída (0) no registrador rdi (0 indica sucesso)
