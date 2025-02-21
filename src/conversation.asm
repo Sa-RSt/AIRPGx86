@@ -411,3 +411,43 @@ conversation_player_request:
     call conversation_context_send_to_openai
 
     epilog
+
+
+; r11 = tema elaborado
+; r8 = vetor de 3 i64s (HP, STAM e LUCK)
+; r9 = vetor de 7 u64s (STR, CON, DEX, WIS, INT, CHA, PER)
+; r10 = endereço do inventário
+; r12 = rascunho do LLM
+; rax = (retorno) string com a resposta do LLM que contém pedidos de rolagem de dados
+conversation_model_review:
+    prolog rdi, r13, r14, r15, rdx, r8, r9
+    mov r14, r9
+    mov r13, r8  ; preservar argumentos
+
+    
+    sub rsp, 16
+    mov r9, rsp
+    mov [r9], r12  ; vetor na stack com o draft do LLM e um ponteiro nulo para indicar o fim do vetor
+    mov qword [r9+8], 0
+    mov rdi, prompt_template_review
+    call prompt_replace
+    add rsp, 16
+    
+    
+    mov r8, conversation_role_user
+    mov r9, rax
+    mov rdi, rax
+    call conversation_context_push  ; colocar pedido análise de viabilidade no contexto
+    
+    call free  ; liberar cópia desnecessária da string
+    
+    mov r9, r14  ; restaurar argumentos para o conversation_context_send_to_openai
+    mov r8, r13
+    
+    call conversation_context_send_to_openai
+    mov r15, rax  ; salvar resposta no r15
+    
+
+    call conversation_context_pop  ; retirar pedido de review
+    
+    epilog

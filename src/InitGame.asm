@@ -13,6 +13,7 @@ global _start
 %include "status.asm"
 %include "openai.asm"
 %include "conversation.asm"
+%include "command.asm"
 
 section .data
 
@@ -36,21 +37,90 @@ section .text
         call choose_name
         call init_attributes
         call use_ability_points ; Lista de atributos em r15
+        mov [command_abilities_address], r15
         mov r9, att_array
         call att_values_array ; Array de atributos em r9
         mov r14, r15 ; Lista de atributos em r14
         call status_init_list ; Lista de status em r15
+        mov [command_status_address], r15
         call theme_ask ; Tema em r8
         call conversation_elaborate_theme
         mov r11, rax ; Coloca o tema elaborado em r11
+        mov [command_theme_address], r11
         mov r8, stat_array
         call status_values_array ; Array de status em r8
         mov r10, 0 ; Inventário inicia nulo
         call conversation_initial_description
-        printf "s", rax ; Imprime a descrição inicial
+        mov rdi, rax
+        mov qword [command_inventory_address], 0
+        call interpret_commands
+        printf "s", rdi ; Imprime a descrição inicial
+        call free
+        call interactive_loop
         call openai_shutdown_subprocess
         ret
     
+
+    interactive_loop:
+        prolog
+        .forever:
+        mov r8b, [dice_roll_feedback]
+        ifnonzero r8b
+            mov r8, conversation_role_user
+            mov r9, dice_roll_feedback
+            call conversation_context_push
+            call dice_roll_clear_feedback
+            call update_prepend_params
+            call conversation_context_send_to_openai
+            mov rdi, rax
+            call interpret_commands
+            jmp .forever
+        endif
+
+        print_literal 10
+        mov r15, [command_inventory_address]
+        call print_inventory
+
+        print_literal 10
+
+        mov r15, [command_status_address]
+        call print_status
+
+        print_literal 10
+
+        printf 'ssss', color_reset, color_by_id_64, "[", PlayerName, "]> ", color_by_id_163
+        xor rdi, rdi
+        call read_line
+
+        printf 's', color_reset
+        mov r12, rax
+        call update_prepend_params
+        call conversation_player_request
+        mov rdi, rax
+        call strdup
+        call interpret_commands
+        push rdi
+
+        call update_prepend_params
+        mov r12, rax
+        call conversation_model_review
+        mov rdi, rax
+        call interpret_commands
+        pop rsi
+        call print
+        jmp .forever
+        epilog
+
+
+    update_prepend_params:
+        prolog r15
+        mov r8, stat_array
+        mov r15, [command_status_address]
+        call status_values_array ; Array de status em r8
+        mov r11, [command_theme_address]
+        mov r9, att_array
+        mov r10, [command_inventory_address]
+        epilog
 
 
     choose_name:

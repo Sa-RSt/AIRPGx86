@@ -14,7 +14,7 @@ def read_null_terminated_string():
     while byte != b'\0':
         out.extend(byte)
         byte = sys.stdin.buffer.read(1)
-    return out.decode()
+    return out.decode(errors='ignore')
 
 
 def write_null_terminated_string(s):
