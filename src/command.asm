@@ -6,6 +6,7 @@
 %include "dice_roll.asm"
 %include "status.asm"
 %include "inventory.asm"
+%include "AbilityScores.asm"
 section .data
 
 command_prefix_roll: db "roll", 0
@@ -76,6 +77,7 @@ interpret_commands:  ; rdi = mensagem escrita pelo LLM, rdi = (retorno) mensagem
                     call r9  ; comando encontrado, chamar ele
                 endif
                 add rsi, 16
+                mov r9, [rsi]
             endwhile
             call strend  ; coloca rdi no começo dos argumentos
             call strend  ; coloca rdi no final dos argumentos
@@ -222,17 +224,8 @@ interpret_give_command:  ; r15 = string com os parâmetros do comando
     endwhile
     mov byte [r13], 0
     inc r13  ; r13 ficará com a string da quantidade
-    mov rsi, r15
-    call trim
-    mov byte [r9], 0
-    mov r14, rsi  ; r14 ficará com o nome
 
-    mov rsi, r13
-    call trim
-    mov r13, rsi
-    mov byte [r9], 0
-
-    mov r12, r9
+    mov r12, r13
     mov r8b, [r12]
     while ne, r8b, '|'
         inc r12
@@ -244,6 +237,16 @@ interpret_give_command:  ; r15 = string com os parâmetros do comando
     call trim
     mov r12, rsi
     mov byte [r9], 0
+
+    mov rsi, r13
+    call trim
+    mov r13, rsi
+    mov byte [r9], 0
+
+    mov rsi, r15
+    call trim
+    mov byte [r9], 0
+    mov r14, rsi  ; r14 ficará com o nome
 
     mov r15, [command_inventory_address]
     call inventory_command_give
@@ -275,3 +278,32 @@ interpret_take_command:  ; r15 = string com os parâmetros do comando
     mov [command_inventory_address], r15
     epilog
 
+
+%ifdef TESTING
+
+section .data
+
+section .text
+global _start
+
+_start:
+    mov qword [command_inventory_address], 0
+    call status_init_list
+    mov [command_status_address], r15
+    call init_attributes
+    mov [command_abilities_address], r15
+    xor rdi, rdi
+    call read_line
+    mov [command_theme_address], rax
+    call read_line
+    mov rdi, rax
+    call interpret_commands
+    mov rsi, rdi
+    call println
+    call print_inventory
+    call print_status
+    mov rsi, dice_roll_feedback
+    call println
+    call exit
+
+%endif
