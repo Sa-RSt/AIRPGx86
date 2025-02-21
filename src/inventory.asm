@@ -1,3 +1,6 @@
+%ifndef INVENTORY_INC
+%define INVENTORY_INC 1
+
 %ifdef TESTING
     global _start
     %define DEBUG 1
@@ -213,7 +216,7 @@ print_inventory:
     _str_inventory_test_desc2: db "abcdefghiklmnopqrstuvwxyz", 0
 
     section .text
-    _start:  ; código de teste manual
+    ;_start:  ; código de teste manual
         xor r15, r15
         mov r14, _str_inventory_test_A
         mov r13, _str_inventory_test_10
@@ -299,3 +302,4 @@ print_inventory:
         call exit
 %endif
 
+%endif
