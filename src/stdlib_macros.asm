@@ -533,6 +533,27 @@ strrev: ; rdi = string para inverter
     epilog
 
 
+strstartswith:  ; r8 = string para verificar, r9 = sufixo, r11 = (retorno) zero se r9 for sufixo de r8
+    prolog r8, r9, r10, rax
+    xor r11, r11
+    mov r10b, [r9]
+    whilenonzero r10b
+        mov al, [r8]
+        cmp r10b, al
+        jne .it_doesnt
+        inc r9
+        inc r8
+        mov r10b, [r9]
+    endwhile
+
+    jmp .it_does
+
+    .it_doesnt:
+    mov r11, 1
+    .it_does:
+    epilog
+
+
 utoa:  ; rax = inteiro a converter, rdi = ponteiro para buffer onde colocar a string decimal
     prolog rax, rcx, rdi, rdx, rsi
     ifzero rax
