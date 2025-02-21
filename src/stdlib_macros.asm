@@ -889,6 +889,7 @@ trim:  ; rsi = string e (retorno) começo da string sem considerar espaços, r9 
     while e, r8b, ' '
         dec r9
         mov r8b, [r9]
+    inc r9
     endwhile
     epilog
 
