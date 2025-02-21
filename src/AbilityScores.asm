@@ -43,6 +43,7 @@ section .bss
 
 section .text
 
+; Endereço da lista de habilidades deve estar em r15!
     use_ability_points:
         prolog r14, r12, r9
         mov r12, 21
