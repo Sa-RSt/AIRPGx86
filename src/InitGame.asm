@@ -23,26 +23,33 @@ section .data
 section .bss
 
     PlayerName: resb 32
+    stat_array: resb 24
+    att_array: resb 56
 
 section .text
 
+    _start:
     game_starter:
+        printf "xc", rsp, 0x0A
         call openai_init_subprocess
         printf 's', welcome
         call choose_name
         call init_attributes
         call use_ability_points ; Lista de atributos em r15
+        mov r9, att_array
         call att_values_array ; Array de atributos em r9
         mov r14, r15 ; Lista de atributos em r14
         call status_init_list ; Lista de status em r15
         call theme_ask ; Tema em r8
         call conversation_elaborate_theme
         mov r11, rax ; Coloca o tema elaborado em r11
+        mov r8, stat_array
         call status_values_array ; Array de status em r8
         mov r10, 0 ; Inventário inicia nulo
         call conversation_initial_description
         printf "s", rax ; Imprime a descrição inicial
         call openai_shutdown_subprocess
+        call exit
         ret
     
 
@@ -51,18 +58,21 @@ section .text
         prolog rdi, rsi, r14
 
         printf "s", whatname
+        mov rdi, 0
+        call read_line
+        mov rsi, rax
         mov rdi, PlayerName
-        scanf rbx, "s", r14
-        printf "c", 0x0A
-        mov rsi, r14
         call strcpy
+        printf "c", 0x0A
 
         epilog
 
     theme_ask:
         prolog
         printf "s", whattheme
-        scanf rbx, "s", r8
+        mov rdi, 0
+        call read_line
+        mov r8, rax
         epilog
 
 %endif
