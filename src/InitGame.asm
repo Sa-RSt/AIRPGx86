@@ -31,7 +31,6 @@ section .text
 
     _start:
     game_starter:
-        printf "xc", rsp, 0x0A
         call openai_init_subprocess
         printf 's', welcome
         call choose_name
