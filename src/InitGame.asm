@@ -49,8 +49,6 @@ section .text
         call conversation_initial_description
         printf "s", rax ; Imprime a descrição inicial
         call openai_shutdown_subprocess
-        printf "s", PlayerName
-        call exit
         ret
     
 
@@ -87,6 +85,8 @@ section .text
         mov rdi, 0
         call read_line
         mov r8, rax
+        printf "c", 0x0A
         epilog
 
 %endif
+
