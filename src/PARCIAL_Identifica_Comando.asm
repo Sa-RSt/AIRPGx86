@@ -1,10 +1,17 @@
 section .data
-    msg_teste db "123[roll DEX]123[roll PER] [update LUCK add 1]e entao [roll advantage CHA] logo[roll advantage 10] [update STAM subtract 2] por fim [roll CON] bla bla [roll disadvantage PER] e [roll disadvantage 14], montanha do Sul Grande [roll 12 243], um troll [roll disadvantage 45] e caiu [update HP subtract 12]", 0
+    msg_teste db "123[roll DEX]123[roll PER] [update LUCK add 1]e entao [roll advantage CHA] logo[roll advantage 10] [update STAM subtract 2] por fim [roll CON] bla bla [roll disadvantage PER] e [roll disadvantage 14], montanha do Sul Grande [roll 12 243], um troll [roll disadvantage 45] e caiu [update HP subtract 12] e ganhou [take bolacha doce | 12] dia de sol [roll advantage DEX] e deu algo [give montanha | 12 | Montanha de brinquedo]", 0
     msg_controle_comando db "roll", 10, "update", 10, "take", 10, "give", 10, 0
     msg_controle_atributos db "STR", 10, "CON", 10, "DEX", 10, "WIS", 10, "INT", 10, "CHA", 10, "PER", 10, 0
     msg_controle_vantagem_desvantagem db "advantage", 10, "disadvantage", 10, 0
     msg_controle_estado db "HP", 10, "STAM", 10, "LUCK", 10, 0
     msg_controle_operacao_estado db "add", 10, "subtract", 10, 0
+    msg_STR db "STR", 0
+    msg_CON db "CON", 0
+    msg_DEX db "DEX", 0
+    msg_WIS db "WIS", 0
+    msg_INT db "INT", 0
+    msg_CHA db "CHA", 0
+    msg_PER db "PER", 0
 
 section .bss
 
@@ -18,7 +25,7 @@ _start:
     call executa_comandos
     call exit
 
-; (rax, rbx, rdi, rsi, r12, r13)
+; (rax, rbx, rdi, rsi, r12, r13, r14)
 ; Recebe o endereço da mensagem em rsi
 executa_comandos:
     call verifica_tamanho   ; Recebe o tamanho em rbx
@@ -30,7 +37,7 @@ executa_comandos:
     mov rdi, rax            ; Endereço criado passa a estar com rdi
     pop rsi
 
-    multipush rdi, rsi
+    multipush rdi, rsi, rbx
     .busca_comando:
         ; Verifica o caractere de rsi
         mov al, [rsi]
@@ -311,6 +318,7 @@ executa_comandos:
                     printf "ic", r12, 0x0A            ; r12 contém o valor de M
                     jmp .prepara_busca_comando1
                 
+        ; FIM ROLL --------------------------------------------------------------
 
         .update:
             print_literal "Update "
@@ -390,51 +398,124 @@ executa_comandos:
                 printf "ic", "subtract ", r12, 0x0A
                 jmp .prepara_busca_comando
 
+        ; FIM UPDATE ---------------------------------------------------------------------------
+
         .take:
-            print_literal "Take", 0x0A
+            print_literal "Take "
+            call le_string              ; rsi aponta para o inicio da mensagem, rax aponta para o inicio, rbx contém o tamanho
+            
+            push rsi
+            mov rsi, rax
+            call escreve_buffer         ; rax aponta para o início do buffer, tamanho em rbx
+            pop rsi
+
+            mov r13, rax                 ; Guarda o endereço do item
+            mov r14, rbx                ; Guarda o tamamnho do item
+
+            add rsi, 3                  ; Aponta rsi para o inicio do número
+
+            call identifica_numero      ; Retorna o valor em r12
+            printf "ic", " ", r12, 0x0A
+
+            cmp r12, -1
+            je .erro_comando
+
+            ; RESUMO: r13 - nome do item | r14 - tamanho do nome do item | r12 - Quantidade de itens
+
+            ; Libera memória nome
+            push rdi
+            mov rdi, r13
+            call free
+            pop rdi
+
+            jmp .prepara_busca_comando
+
+        ; FIM TAKE ------------------------------------------------------------------------------------
+
         .give:
-            print_literal "Give", 0x0A
+            print_literal "Give "
+            call le_string              ; rsi aponta para o inicio da mensagem, rax aponta para o inicio, rbx contém o tamanho
+            push rsi
+            mov rsi, rax
+            call escreve_buffer         ; rax aponta para o início do buffer, tamanho em rbx
+            pop rsi
+
+            mov r13, rax                ; Guarda o endereço do item
+            mov r14, rbx                ; Guarda o tamamnho do item
+            add rsi, 3                  ; Aponta rsi para o inicio do número
+
+            call identifica_numero      ; Retorna o valor em r12
+            printf "ic", " ", r12, " "
+
+            cmp r12, -1
+            je .erro_comando
+
+            add rsi, 3                  ; Aponta rsi para o início da descrição
+            call le_string              ; rsi aponta para o inicio da mensagem, rax aponta para o inicio, rbx contém o tamanho
+            push rsi
+            mov rsi, rax
+            call escreve_buffer         ; rax aponta para o início do buffer, tamanho em rbx
+            pop rsi
+
+            ; RESUMO: r13 - nome do item | r14 - tamanho do nome do item | r12 - Quantidade de itens | rax - Descrição do item | rbx - Tamanho da descrição do item
+
+            ; Libera memória nome
+            push rdi
+            mov rdi, r13
+            call free
+            pop rdi
+
+            ; Libera memória descrição
+            push rdi
+            mov rdi, rax
+            call free
+            pop rdi
+
+            jmp .prepara_busca_comando
 
 
     ; Encontrou o comando --------------------------------------------
-    ; Tem três desses pois dependendo do trecho usa mais ou menos push
+    ; Tem três desses pois dependendo do trecho, se usa mais ou menos push
 
     .prepara_busca_comando2:
-        pop rdi                 ; Descarta o valor guardado de rsi (linha 142 / 203)
+        pop rdi                 ; Descarta o valor guardado de rsi (linha ~142 / ~203)
         jmp .prepara_busca_comando1
 
     .prepara_busca_comando1:
-        pop rdi                 ; Descarta o valor guardado de rsi (linha 75)
+        pop rdi                 ; Descarta o valor guardado de rsi (linha ~75)
         jmp .prepara_busca_comando
 
     .prepara_busca_comando:
-        pop rdi                 ; Recupera o valor de rdi (linha 56)
+        pop rdi                 ; Recupera o valor de rdi (linha ~56)
         inc rsi                 ; Próximo do ']'
         jmp .busca_comando
 
     ; Erros----------------------------
 
     .erro_comando2:
-        pop rdi                 ; Descarta o valor guardado de rsi (linha 142 / 203)
+        pop rdi                 ; Descarta o valor guardado de rsi (linha ~142 / ~203)
         jmp .erro_comando1
 
     .erro_comando1:
-        pop rdi                 ; Descarta o push (linha 75)
+        pop rdi                 ; Descarta o push (linha ~75)
         jmp .erro_comando
 
     .erro_comando:
-        pop rdi                 ; Descarta o push (linha 56)
+        pop rdi                 ; Descarta o push (linha ~56)
         print_literal "Comando inválido", 0x0A
         jmp .final
 
     ; Finalização -------------------------
 
     .final:
-        multipop rdi, rsi
+        multipop rdi, rsi, rbx
+        print_literal 0x0A
         call escreve_buffer
+        print_literal 0x0A
         push rsi
         mov rsi, rdi
         call escreve_buffer
+        print_literal 0x0A
         pop rsi
         call free               ; Libera a memória alocada dinamicantente em rdi
         ret
@@ -460,7 +541,7 @@ verifica_tamanho:
         ret
 
 ; Escreve o conteúdo apontado por um registrador (rax, rbx, rdi)
-; Recebe o endereço por rax e o tamanho em rbx
+; Recebe o endereço por rsi e o tamanho em rbx
 escreve_buffer:
     multipush rax, rdx, rdi
     mov rax, 1     ; syscall: sys_write
@@ -468,8 +549,6 @@ escreve_buffer:
     mov rdx, rbx   ; tamanho da string
     syscall
     multipop rax, rdx, rdi
-
-    print_literal 0x0A
     ret
 
 ; Verifica qual comando deve ser executado (rax, rbx, rdi, rsi, r12)
@@ -572,4 +651,59 @@ identifica_numero:
     .fim:
         dec rsi         ; Aponta para a o caractere de parada " " ou "]"
         multipop rcx
+        ret
+
+; Lê uma string até encontrar '|' ou ']' (rax, rbx, rcx, rsi)
+; rsi aponta para a string (não preserva original). Retorna em um buffer alocado dinamicamente em rax e o tamanho em rbx
+le_string:
+    multipush rcx
+    ; Verifica o tamanho da string até "|" ou "]"
+    mov rbx, 0
+    push rsi
+    .loop_tamanho:
+        mov cl, byte [rsi]
+        cmp cl, "|"
+        je .continua
+        cmp cl, ']'
+        je .continua_colchete
+        cmp cl, 0
+        je .continua_colchete
+
+        inc rbx
+        inc rsi
+        jmp .loop_tamanho
+    
+    .continua_colchete:
+        inc rbx                 ; Aumenta um byte para guardar o valor 0
+        jmp .continua
+
+    .continua:
+        mov rsi, rbx
+        call malloc             ; Tamanho em rsi, retorna o buffer em rax
+        pop rsi                 ; Recupera a posição original de rsi
+
+        push rax                ; Guarda a posição orginal de rax
+        push rbx                ; Guarda o tamanho em rbx
+
+    .loop_escrita:
+        ; Verifica se chegou ao final
+        cmp rbx, 1
+        je .fim
+
+        mov cl, byte [rsi]
+        mov byte [rax], cl
+
+        inc rsi
+        inc rax
+        dec rbx
+
+        jmp .loop_escrita
+    
+    .fim:
+        inc rax
+        mov byte[rax], 0        ; Adiciona o terminador 0 ao final
+
+        pop rbx                 ; Recupera o tamanho
+        pop rax                 ; Recupera a posição inicial
+        multipop rcx            ; Recupera o valor de rbx e rcx
         ret
