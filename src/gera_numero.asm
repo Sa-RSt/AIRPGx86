@@ -17,7 +17,6 @@ section .text
 ;_start:
     mov rdi, 20         ; Valor de n para a função gera_numero
     call gera_numero
-    print_registers rdx
     call exit
 %endif
 
@@ -54,15 +53,12 @@ gera_numero:
 
     xor rax, rax
     mov al, [random_byte]   ; Move o valor gerado para eax expandindo os zeros
-    print_registers rax
 
     ; Calcula o resto do número sorteado por n
     mov rdx, 0                  ; Parte superior do dividendo (parte inferior está no rax)
     div r15                     ; Divisor
 
     add rdx, 1                  ; Soma 1 para ficar de 1 a n
-
-    ; printf "uc", rdx, 0x0A
 
     multipop rax, rbx, rcx, rsi, r14, r15
     ret
