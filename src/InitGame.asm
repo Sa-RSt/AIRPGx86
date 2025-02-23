@@ -132,7 +132,7 @@ section .text
         mov r15, [command_status_address]
         mov rcx, [stat_array]
         ifzero rcx
-            printf 'ssc', color_red, "Você morreu! :(", color_reset, 10
+            printf 'cssc', 0x0A, color_red, "Você morreu! :(", color_reset, 10
             call exit
         endif
         epilog
