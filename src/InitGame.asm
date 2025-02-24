@@ -88,7 +88,7 @@ section .text
         call print_status
 
         print_literal 10
-
+        call check_death
         printf 'ssss', color_reset, color_by_id_64, "[", PlayerName, "]> ", color_by_id_163
         xor rdi, rdi
         call read_line
