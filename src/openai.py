@@ -50,7 +50,7 @@ def write_status_error():
 
 def make_api_request(context, api_key):
     body = {
-        'model': 'gpt-4o-mini',
+        'model': 'gpt-4o',
         'temperature': .4,
         'messages': context,
     }
