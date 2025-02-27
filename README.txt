@@ -1,11 +1,13 @@
-Alunos:
-    - Fabrício Morais Muller, RA: 168829
-    - Gabriel Garcia Almeida, RA: 168857
-    - Sasha Rodela Steidle, RA: 169233
+O presente repositório se trata de um projeto produzido como trabalho semestral na disciplina de Arquitetura e Organização de Computadores.
+
+Autores:
+    - Fabrício Morais Muller
+    - Gabriel Garcia Almeida
+    - Sasha Rodela Steidle
 
 Para executar o projeto:
     1. Navegue para a pasta src/ usando o comando "cd". Isso é essencial para o assembler buscar os arquivos corretos.
-    2. Use o assembler nasm (testado 2.16.03) no arquibo InitGame.asm:
+    2. Use o assembler nasm (testado 2.16.03) no arquivo InitGame.asm:
         nasm -f elf64 InitGame.asm -o ../InitGame.o
     3. Use um linker para produzir o executável:
         ld ../InitGame.o -o ../RPGPT
@@ -13,7 +15,7 @@ Para executar o projeto:
         ../RPGPT
 
 ATENÇÃO:
-    - Para assemblar o programa, coloque um arquivo chamado .openai-api-key (sem extensão) contendo uma chave de api da OpenAI no diretório principal do projeto. Deixamos na pasta compactada no Google Classroom um arquivo com alguns créditos, suficiente para teste. Fique à vontade para usá-lo. Esse arquivo será incluído pelo assembler no executável binário.
+    - Para assemblar o programa, coloque um arquivo chamado .openai-api-key (sem extensão) contendo uma chave de api da OpenAI no diretório principal do projeto. Esse arquivo será incluído pelo assembler no executável binário, portanto, NÃO DISTRIBUA O EXECUTÁVEL GERADO, pois há o risco de sua chave ser comprometida.
 
     - Os prompts na pasta prompts/ também devem estar acessíveis durante a assemblagem.
 
