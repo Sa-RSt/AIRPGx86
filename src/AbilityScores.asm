@@ -1,9 +1,6 @@
 %ifndef ABILITY_SCORES
 %define ABILITY_SCORES 1
 
-%define DEBUG 1
-global _start
-
 %ifdef TESTING
     global _start
     %define DEBUG 1

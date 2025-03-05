@@ -12,9 +12,10 @@ section .data
 conversation_field_role: equ 0
 conversation_field_content: equ 8
 conversation_role_user: db "user", 0
-conversation_role_system: db "system", 0
+;conversation_role_system: db "system", 0 (desabilitado pois o o1-mini não suporta isso)
 conversation_role_assistant: db "assistant", 0
-
+conversation_text_understood: db "Entendi. Seguirei essas orientações a partir de agora.", 0
+times 128 - ($ - conversation_text_understood) db 0  ; padding de 128 bytes para copiar diretamente para a lista
 conversation_empty_index: dq 0, 0, 0, 0, 0, 0, 0, 0  ; 64 bytes zerados
 
 section .bss
@@ -25,7 +26,7 @@ conversation_garbage: resq 32
 section .text
 
 %ifdef TESTING
-    _start:
+    ;_start:
         call openai_init_subprocess
 
         xor rdi, rdi
@@ -36,7 +37,7 @@ section .text
 
         mov rdi, r8
         call free
-        
+
         printf 'csc', "Tema elaborado:", 10, rax, 10
 
         sub rsp, 80
@@ -179,19 +180,29 @@ _conversation_clear_garbage:  ; dá free nos ponteiros marcados como lixo. não 
 ; de conversation.asm. Por isso, NUNCA dê "free" manualmente nesse valor nem na string e, caso queira usá-lo no futuro, copie-o para um lugar seguro!
 _conversation_get_context:
     prolog r12, r15, rdi
-    mov r12, [conversation_context_list_first_element]
     call _conversation_get_prepend  ; colocar prepend no rax
     sub rsp, 128
     mov rdi, rsp
-    mov qword [rdi+conversation_field_role], conversation_role_system
+    mov qword [rdi+conversation_field_role], conversation_role_user
     mov [rdi+conversation_field_content], rax
     multipush conversation_empty_index, rdi  ; passar index (vazio) e info (role + content)
     call init_list
-    add rsp, 144  ; 16 a mais para compensar os parâmetros passados pela stack
-
+    add rsp, 16
+    mov qword [rdi+conversation_field_role], conversation_role_assistant
+    mov qword [rdi+conversation_field_content], conversation_text_understood
+    multipush r15, conversation_empty_index, rdi
+    call add_to_list
+    add rsp, 24
+    add rsp, 128
     mov rax, r15
-    mov [rax+field_prox], r12  ; colocar restante da conversa (se existir) após o prepend
+    call _conversation_add_garbage
+    mov r15, [r15+field_prox]
+    mov r12, [conversation_context_list_first_element]
+    mov [r15+field_prox], r12  ; colocar restante da conversa (se existir) após o prepend
+    push rax
+    mov rax, r15
     call _conversation_add_garbage  ; marcar elemento da lista do prepend como lixo, pois deve ser gerado novamente toda vez
+    pop rax
     epilog
 
 conversation_elaborate_theme:  ; r8 = ponteiro para string com tema digitado pelo usuário, rax = (retorno) tema elaborado
@@ -297,7 +308,7 @@ conversation_context_send_to_openai:
     test rax, rax  ; lista está vazia -> retornar
     jz .return
 
-    add rax, 1  ; +1 pelo prepend
+    add rax, 2  ; +2 pelo prepend
     call openai_write_qword  ; enviar número de elementos para o subprocesso
 
     call _conversation_get_context  ; contexto inteiro, com o prepend
@@ -374,7 +385,7 @@ conversation_player_request:
     mov rdi, prompt_template_viability
     call prompt_replace
     add rsp, 16
-    
+
     mov r8, conversation_role_user
     mov r9, rax
     mov rdi, rax
@@ -424,7 +435,7 @@ conversation_model_review:
     mov r14, r9
     mov r13, r8  ; preservar argumentos
 
-    
+
     sub rsp, 16
     mov r9, rsp
     mov [r9], r12  ; vetor na stack com o draft do LLM e um ponteiro nulo para indicar o fim do vetor
@@ -432,22 +443,22 @@ conversation_model_review:
     mov rdi, prompt_template_review
     call prompt_replace
     add rsp, 16
-    
-    
+
+
     mov r8, conversation_role_user
     mov r9, rax
     mov rdi, rax
     call conversation_context_push  ; colocar pedido análise de viabilidade no contexto
-    
+
     call free  ; liberar cópia desnecessária da string
-    
+
     mov r9, r14  ; restaurar argumentos para o conversation_context_send_to_openai
     mov r8, r13
-    
+
     call conversation_context_send_to_openai
     mov r15, rax  ; salvar resposta no r15
-    
+
 
     call conversation_context_pop  ; retirar pedido de review
-    
+
     epilog

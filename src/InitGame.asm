@@ -1,11 +1,6 @@
 %ifndef INIT_GAME
 %define INIT_GAME 1
 
-%ifdef TESTING
-    global _start
-    %define DEBUG 1
-%endif
-
 %define DEBUG 1
 global _start
 
@@ -75,6 +70,10 @@ section .text
             call conversation_context_send_to_openai
             mov rdi, rax
             call interpret_commands
+            mov rsi, rdi
+            call trim_whitespace
+            mov [r9], byte 0
+            printf 'sssc', color_by_id_192, rsi, color_reset, 10
             jmp .forever
         endif
 
@@ -98,19 +97,22 @@ section .text
         call update_prepend_params
         call conversation_player_request
         mov rdi, rax
+        mov r14, rax
         call strdup
         call interpret_commands
         push rdi
         call check_death
 
         call update_prepend_params
-        mov r12, rax
+        mov r12, r14
         call conversation_model_review
         mov rdi, rax
         call interpret_commands
         pop rsi
         call check_death
-        call print
+        call trim_whitespace
+        mov [r9], byte 0
+        printf 'sssc', color_by_id_192, rsi, color_reset, 10
         jmp .forever
         epilog
 

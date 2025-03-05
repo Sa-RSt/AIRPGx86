@@ -104,7 +104,7 @@ prompt_replace:  ; rdi = template a usar, r9 = vetor terminado em ponteiro nulo 
     epilog
 
 %ifdef TESTING
-    _start:
+    ;_start:
         print_literal "Digite o número de textos: "
         scanf r8, 'u', r10
         assert e, r8, 1

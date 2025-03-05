@@ -179,7 +179,7 @@ openai_shutdown_subprocess:
 %ifdef TESTING
 global _start
 
-_start:
+;_start:
     call openai_init_subprocess
     scanf r8, 'u', rax
     print_registers r8, rax

@@ -893,6 +893,29 @@ trim:  ; rsi = string e (retorno) começo da string sem considerar espaços, r9 
     inc r9
     epilog
 
+trim_whitespace:  ; rsi = string e (retorno) começo da string sem considerar caracteres whitespace, r9 = final da string sem considerar caracteres whitespace
+    prolog r8, rdi
+    mov r8b, [rsi]
+    while le, r8b, ' '
+        test r8b, r8b
+        jz .break1
+        inc rsi
+        mov r8b, [rsi]
+    endwhile
+    .break1:
+
+    mov rdi, rsi
+    call strend
+    mov r9, rdi
+    dec r9
+    mov r8b, [r9]
+    while le, r8b, ' '
+        dec r9
+        mov r8b, [r9]
+    endwhile
+    inc r9
+    epilog
+
 strsiz: ; rsi = string para ler, rdi = (retorno) tamanho da string terminada em 0
     prolog rsi, rax
     mov rdi, 0

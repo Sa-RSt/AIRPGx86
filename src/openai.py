@@ -2,6 +2,7 @@ import sys
 import json
 import struct
 from urllib.request import Request, urlopen
+from urllib.error import HTTPError
 import time
 
 
@@ -50,10 +51,11 @@ def write_status_error():
 
 def make_api_request(context, api_key):
     body = {
-        'model': 'gpt-4o',
-        'temperature': .4,
+        'model': 'o1-mini',
+        #'temperature': .4,  (não suportado pelo o1-mini)
         'messages': context,
     }
+    print(context[-1], file=sys.stderr)
     ser = json.dumps(body).encode()
     headers = {
         'Content-Type': 'application/json',
@@ -64,11 +66,20 @@ def make_api_request(context, api_key):
     for _ in range(5):
         try:
             with urlopen(req) as resp:
+                print(resp, file=sys.stderr)
                 if resp.code == 200:
-                    return json.load(resp)['choices'][0]['message']
+                    msg = json.load(resp)['choices'][0]['message']
+                    print('API:', msg, file=sys.stderr)
+                    return msg
                 else:
+                    print(resp.read(), file=sys.stderr)
                     wait *= 2
-        except OSError:
+        except HTTPError as err:
+            print(err, file=sys.stderr)
+            print(err.read(), file=sys.stderr)
+            wait *= 2
+        except OSError as err:
+            print(err, file=sys.stderr)
             wait *= 2
         time.sleep(wait)
     return None
