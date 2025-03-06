@@ -55,7 +55,7 @@ def make_api_request(context, api_key):
         #'temperature': .4,  (não suportado pelo o1-mini)
         'messages': context,
     }
-    print(context[-1], file=sys.stderr)
+    #print(context[-1], file=sys.stderr)
     ser = json.dumps(body).encode()
     headers = {
         'Content-Type': 'application/json',
@@ -66,20 +66,20 @@ def make_api_request(context, api_key):
     for _ in range(5):
         try:
             with urlopen(req) as resp:
-                print(resp, file=sys.stderr)
+                #print(resp, file=sys.stderr)
                 if resp.code == 200:
                     msg = json.load(resp)['choices'][0]['message']
-                    print('API:', msg, file=sys.stderr)
+                    #print('API:', msg, file=sys.stderr)
                     return msg
                 else:
                     print(resp.read(), file=sys.stderr)
                     wait *= 2
         except HTTPError as err:
-            print(err, file=sys.stderr)
-            print(err.read(), file=sys.stderr)
+            #print(err, file=sys.stderr)
+            #print(err.read(), file=sys.stderr)
             wait *= 2
         except OSError as err:
-            print(err, file=sys.stderr)
+            #print(err, file=sys.stderr)
             wait *= 2
         time.sleep(wait)
     return None
